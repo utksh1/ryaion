@@ -3,9 +3,10 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import {
   XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area, LineChart, Line, ResponsiveContainer
 } from 'recharts';
-import { Stock, AIAnalysis, NewsItem, PortfolioItem } from './types';
+import type { Stock, AIAnalysis, NewsItem, PortfolioItem } from './types';
 import { INDIAN_STOCKS, EDUCATION_MODULES } from './constants';
-import { getStockAnalysis, compareStocks, getMarketNews, askRya, getStockVibe, getMarketVibeCheck, MarketVibeResponse } from './services/geminiService';
+import { getStockAnalysis, compareStocks, getMarketNews, askRya, getStockVibe, getMarketVibeCheck } from './services/geminiService';
+import type { MarketVibeResponse } from './services/geminiService';
 import SafeChartContainer from './SafeChartContainer';
 import ChartGate from './ChartGate';
 import { MarketMatrix } from './MarketMatrix';
@@ -542,7 +543,6 @@ const ComparePage = ({ stocks }: { stocks: Stock[] }) => {
 export default function App() {
   console.log("App component rendering...");
   const location = useLocation();
-  const [mounted, setMounted] = useState(false);
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [detailStock, setDetailStock] = useState<Stock | null>(null);
   const [balance, setBalance] = useState(1000000);
@@ -555,7 +555,6 @@ export default function App() {
     }))
   })));
 
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const itv = setInterval(() => {

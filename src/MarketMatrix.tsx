@@ -1,4 +1,3 @@
-import React from 'react';
 import { AreaChart, Area } from 'recharts';
 import type { Stock } from './types';
 import SafeChartContainer from './SafeChartContainer';

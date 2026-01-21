@@ -545,7 +545,6 @@ const ComparePage = ({ stocks }: { stocks: Stock[] }) => {
 export default function App() {
   console.log("App component rendering...");
   const location = useLocation();
-  const [mounted, setMounted] = useState(false);
   // const [activeTab, setActiveTab] = useState('Market');
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [detailStock, setDetailStock] = useState<Stock | null>(null);
@@ -559,7 +558,6 @@ export default function App() {
     }))
   })));
 
-  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const itv = setInterval(() => {
