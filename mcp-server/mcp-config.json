@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+        "ryaion-market-data": {
+            "command": "node",
+            "args": [
+                "/Users/Apple/Desktop/Projectss/ryaion/mcp-server/index.js"
+            ],
+            "env": {}
+        }
+    }
+}

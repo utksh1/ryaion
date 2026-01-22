@@ -1,0 +1,27 @@
+{
+  "name": "ryaion-market-data-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for live Indian stock market data",
+  "main": "index.js",
+  "bin": {
+    "ryaion-market-data": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Test not configured\""
+  },
+  "keywords": [
+    "mcp",
+    "stocks",
+    "india",
+    "nse",
+    "bse"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "cheerio": "^1.0.0",
+    "node-fetch": "^2.7.0"
+  }
+}
