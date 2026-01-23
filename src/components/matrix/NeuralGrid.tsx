@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchAllStocks, type LiveStockData } from "../../services/marketDataService";
+// import { subscribeToMarketData } from "../../services/firebaseMarketService"; // Disabled for local dev
+import { type LiveStockData } from "../../services/marketDataService";
 import { StockCard } from "./StockCard";
 import { motion } from "framer-motion";
 
@@ -9,25 +10,36 @@ export const NeuralGrid = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const loadStocks = async () => {
+        const fetchLocalData = async () => {
             try {
-                const data = await fetchAllStocks();
-                if (data.length > 0) {
-                    setStocks(data);
+                const res = await fetch('/market-data.json');
+                if (!res.ok) throw new Error('Failed to fetch local data');
+                const data = await res.json();
+
+                if (data && data.topStocks) {
+                    const formattedStocks: LiveStockData[] = data.topStocks.map((s: any) => ({
+                        symbol: s.symbol,
+                        name: s.symbol,
+                        price: s.price,
+                        change: s.change,
+                        changePercent: parseFloat(String(s.changePercent).replace('%', '')),
+                        volume: '0',
+                        high: 0,
+                        low: 0,
+                        timestamp: new Date().toISOString()
+                    }));
+                    setStocks(formattedStocks);
+                    setLoading(false);
                     setError(null);
-                } else {
-                    setError('No stock data available');
                 }
             } catch (err) {
-                setError('Failed to load stocks');
-                console.error(err);
-            } finally {
-                setLoading(false);
+                console.error('Polling error:', err);
+                // Don't show error to user immediately to avoid flickering, just log
             }
         };
 
-        loadStocks();
-        const interval = setInterval(loadStocks, 30000);
+        fetchLocalData(); // Initial fetch
+        const interval = setInterval(fetchLocalData, 2000); // Poll every 2 seconds for "live" feel
         return () => clearInterval(interval);
     }, []);
 
