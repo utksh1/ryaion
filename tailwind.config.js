@@ -14,7 +14,7 @@ export default {
       },
       fontFamily: {
         'bricolage': ['"Bricolage Grotesque"', 'sans-serif'],
-        'outfit': ['"Outfit"', 'sans-serif'],
+        'plus-jakarta': ['"Plus Jakarta Sans"', 'sans-serif'],
       },
       backdropBlur: {
         '24': '24px',

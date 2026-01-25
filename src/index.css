@@ -5,20 +5,20 @@
   --color-lavender: #6968A6;
   --color-dusty-rose: #CF9893;
   --color-deep-teal: #085078;
-  --color-obsidian-black: #0a0a12;
-  --color-cyber-gray: #1a1a24;
+  --color-obsidian-black: #050508;
+  --color-cyber-gray: #0a0a0f;
 
   /* Legacy aliases for compatibility */
   --color-sangria-red: #6968A6;
   --color-market-green: #CF9893;
 
   --font-bricolage: "Bricolage Grotesque", sans-serif;
-  --font-outfit: "Outfit", sans-serif;
+  --font-plus-jakarta: "Plus Jakarta Sans", sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-obsidian-black text-white font-outfit antialiased selection:bg-lavender selection:text-white;
+    @apply bg-obsidian-black text-white font-plus-jakarta antialiased selection:bg-lavender selection:text-white;
   }
 
   h1,

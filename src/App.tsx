@@ -44,12 +44,33 @@ function App() {
           >
             {/* Left Col - Market Matrix */}
             <div className="md:col-span-8 flex flex-col gap-6">
+
+              {/* Minimal 3D Hero Section */}
+              <GlassCard className="relative h-[160px] md:h-[180px] overflow-hidden flex items-center justify-center border-white/5 shadow-lg bg-white/[0.01] backdrop-blur-2xl">
+                <div className="relative z-10 text-center px-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.99 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  >
+                    <h2 className="text-2xl md:text-[36px] font-bricolage font-black uppercase tracking-tighter italic text-white mb-1.5 leading-none">
+                      Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white/70 to-dusty-rose">Surveillance</span>
+                    </h2>
+                    <div className="flex items-center justify-center gap-3 text-[8px] md:text-[9px] font-bold tracking-[0.4em] text-white/15 uppercase">
+                      <span className="flex items-center gap-1.5">Pulse Monitor <span className="w-1 h-1 bg-lavender rounded-full opacity-30" /></span>
+                      <span className="flex items-center gap-1.5">Neural Analysis <span className="w-1 h-1 bg-dusty-rose rounded-full opacity-30" /></span>
+                      <span className="flex items-center gap-1.5">Alpha Node</span>
+                    </div>
+                  </motion.div>
+                </div>
+              </GlassCard>
+
               <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center px-2">
-                  <h2 className="text-2xl font-bricolage text-white tracking-tight flex items-center gap-2">
-                    <span className="text-lavender">///</span> MARKET SURVEILLANCE
+                  <h2 className="text-xl font-bold font-bricolage text-white tracking-widest uppercase opacity-50 flex items-center gap-2">
+                    <span className="text-lavender">///</span> SENSORY GRID
                   </h2>
-                  <CyberButton variant="ghost" className="text-xs border border-white/10">View Full Matrix</CyberButton>
+                  <CyberButton variant="ghost" className="text-[10px] border border-white/5 opacity-40">Matrix Config</CyberButton>
                 </div>
                 <NeuralGrid />
               </div>
@@ -126,7 +147,10 @@ function App() {
             exit={{ opacity: 0, scale: 1.1 }}
             className="h-full flex items-center justify-center"
           >
-            <AuthSwitch />
+            <AuthSwitch
+              onSuccess={() => handleNavigate('matrix')}
+              onBackToDashboard={() => setActiveTab('matrix')}
+            />
           </motion.div>
         )}
       </AnimatePresence>
