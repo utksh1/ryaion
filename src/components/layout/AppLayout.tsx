@@ -16,9 +16,11 @@ export const AppLayout = ({ children, activeTab, onNavigate }: AppLayoutProps) =
             <div className="fixed bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-deep-teal/20 rounded-full blur-[150px] pointer-events-none" />
 
             {/* Premium 3D Navigation Bar (Top Centered) */}
-            <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-6">
-                <PillBase activeSection={activeTab} onSectionClick={onNavigate} />
-            </div>
+            {activeTab !== 'login' && (
+                <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-6">
+                    <PillBase activeSection={activeTab} onSectionClick={onNavigate} />
+                </div>
+            )}
 
             {/* Main Content Area */}
             <main className="flex-1 overflow-y-auto h-screen relative z-10 p-4 md:p-8 pt-24 md:pt-28 pb-8 flex flex-col">

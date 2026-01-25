@@ -8,6 +8,7 @@ import { OracleView } from "./components/oracle/OracleView";
 import { BattleArena } from "./components/arena/BattleArena";
 import { PortfolioVault } from "./components/vault/PortfolioVault";
 import { AskRya } from "./components/askrya/AskRya";
+import { AuthSwitch } from "./components/ui/auth-switch";
 import { AnimatePresence, motion } from "framer-motion";
 
 function App() {
@@ -114,6 +115,18 @@ function App() {
             className="h-full"
           >
             <PortfolioVault />
+          </motion.div>
+        )}
+
+        {activeTab === 'login' && (
+          <motion.div
+            key="login"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="h-full flex items-center justify-center"
+          >
+            <AuthSwitch />
           </motion.div>
         )}
       </AnimatePresence>
