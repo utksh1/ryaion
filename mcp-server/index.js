@@ -54,41 +54,13 @@ async function fetchStockPrice(symbol) {
         const changeText = changeElement.first().text() || '';
 
         // Parse change values
-        // Parse change values
         const changeMatch = changeText.match(/([\+\-]?[\d,\.]+)\s*\(([\+\-]?[\d\.]+%)\)/);
-
-        if (changeMatch) {
-            return {
-                symbol: symbol,
-                price: parseFloat(price.replace(/[₹,]/g, '')) || 0,
-                change: parseFloat(changeMatch[1].replace(/,/g, '')),
-                changePercent: changeMatch[2],
-                exchange: 'NSE',
-                timestamp: new Date().toISOString()
-            };
-        }
-
-        // Fallback: Calculate from Previous Close
-        const currentPrice = parseFloat(price.replace(/[₹,]/g, '')) || 0;
-        const prevCloseLabel = $('div:contains("Previous close")').last();
-        let calculatedChange = 0;
-        let calculatedChangePercent = '0%';
-
-        if (prevCloseLabel.length > 0) {
-            const prevCloseText = prevCloseLabel.parent().siblings().first().text();
-            const prevClose = parseFloat(prevCloseText.replace(/[₹,]/g, '')) || 0;
-            if (prevClose > 0 && currentPrice > 0) {
-                calculatedChange = currentPrice - prevClose;
-                const percent = (calculatedChange / prevClose) * 100;
-                calculatedChangePercent = `${calculatedChange >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
-            }
-        }
 
         return {
             symbol: symbol,
-            price: currentPrice,
-            change: parseFloat(calculatedChange.toFixed(2)),
-            changePercent: calculatedChangePercent,
+            price: parseFloat(price.replace(/[₹,]/g, '')) || 0,
+            change: changeMatch ? parseFloat(changeMatch[1].replace(/,/g, '')) : 0,
+            changePercent: changeMatch ? changeMatch[2] : '0%',
             exchange: 'NSE',
             timestamp: new Date().toISOString()
         };
@@ -133,32 +105,11 @@ async function fetchMarketIndex(indexName) {
 
         const changeMatch = changeText.match(/([\+\-]?[\d,\.]+)\s*\(([\+\-]?[\d\.]+%)\)/);
 
-        let indexValue = parseFloat(price.replace(/[₹,]/g, '')) || 0;
-        let change = 0;
-        let changePercent = '0%';
-
-        if (changeMatch) {
-            change = parseFloat(changeMatch[1].replace(/,/g, ''));
-            changePercent = changeMatch[2];
-        } else {
-            // Fallback for indices
-            const prevCloseLabel = $('div:contains("Previous close")').last();
-            if (prevCloseLabel.length > 0) {
-                const prevCloseText = prevCloseLabel.parent().siblings().first().text();
-                const prevClose = parseFloat(prevCloseText.replace(/[₹,]/g, '')) || 0;
-                if (prevClose > 0 && indexValue > 0) {
-                    change = indexValue - prevClose;
-                    const percent = (change / prevClose) * 100;
-                    changePercent = `${change >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
-                }
-            }
-        }
-
         return {
             index: indexName,
-            value: indexValue,
-            change: parseFloat(change.toFixed(2)),
-            changePercent: changePercent,
+            value: parseFloat(price.replace(/[₹,]/g, '')) || 0,
+            change: changeMatch ? parseFloat(changeMatch[1].replace(/,/g, '')) : 0,
+            changePercent: changeMatch ? changeMatch[2] : '0%',
             timestamp: new Date().toISOString()
         };
     } catch (error) {
