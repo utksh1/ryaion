@@ -88,14 +88,18 @@ async function syncMarketData() {
     console.log(`[${new Date().toISOString()}] Sync complete.`);
 }
 
+
 // Run immediately if called directly
 if (require.main === module) {
-    syncMarketData()
-        .then(() => process.exit(0))
-        .catch(err => {
-            console.error("Fatal error:", err);
-            process.exit(1);
-        });
+    // Run once immediately
+    syncMarketData().catch(console.error);
+
+    // Then run every 30 seconds
+    console.log("Starting polling interval (30s)...");
+    setInterval(() => {
+        syncMarketData().catch(console.error);
+    }, 30000);
 }
 
 module.exports = { syncMarketData };
+
