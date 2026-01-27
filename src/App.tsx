@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { AppLayout } from "./components/layout/AppLayout";
 import { GlassCard } from "./components/ui/GlassCard";
 import { CyberButton } from "./components/ui/CyberButton";
@@ -10,10 +11,45 @@ import { PortfolioVault } from "./components/vault/PortfolioVault";
 import { AskRya } from "./components/askrya/AskRya";
 import { AuthSwitch } from "./components/ui/auth-switch";
 import { AnimatePresence, motion } from "framer-motion";
+import { supabase } from "./lib/supabaseClient";
+import { fetchAllStocks, type LiveStockData } from "./services/marketDataService";
 
 function App() {
   const [activeTab, setActiveTab] = useState("matrix");
   const [showOracleModal, setShowOracleModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [marketData, setMarketData] = useState<LiveStockData[]>([]);
+
+  useEffect(() => {
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    // Fetch Market Data
+    const loadMarketData = async () => {
+      const data = await fetchAllStocks();
+      setMarketData(data);
+    };
+    loadMarketData();
+    // Poll every 30 seconds
+    const interval = setInterval(loadMarketData, 30000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Derive Gainers and Losers
+  const gainers = [...marketData].sort((a, b) => b.changePercent - a.changePercent).slice(0, 3);
+  const losers = [...marketData].sort((a, b) => a.changePercent - b.changePercent).slice(0, 3);
+
 
   // When Oracle tab is clicked, we might want a full view or modal.
   // Requirement says "Advisor Node", implies a full view.
@@ -27,13 +63,15 @@ function App() {
   };
 
   return (
-    <AppLayout activeTab={activeTab} onNavigate={handleNavigate}>
+    <AppLayout activeTab={activeTab} onNavigate={handleNavigate} isLoggedIn={isLoggedIn}>
       <AskRya />
       <AnimatePresence mode="wait">
         {/* Oracle Modal Overlay */}
         {showOracleModal && <OracleView onClose={() => setShowOracleModal(false)} />}
 
+
         {/* Views */}
+
         {activeTab === 'matrix' && (
           <motion.div
             key="matrix"
@@ -76,13 +114,51 @@ function App() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <GlassCard className="p-6 h-[200px]">
-                  <h3 className="text-lg font-bold mb-2 text-dusty-rose">Top Gainers</h3>
-                  <div className="text-xs text-gray-400">Mock Data Module - Pending</div>
+                <GlassCard className="p-6 min-h-[200px]">
+                  <h3 className="text-lg font-bold mb-4 text-market-green flex items-center gap-2">
+                    <span className="text-xs tracking-widest bg-market-green/10 px-2 py-0.5 rounded">TOP GAINERS</span>
+                  </h3>
+                  <div className="space-y-3">
+                    {gainers.length > 0 ? (
+                      gainers.map((stock) => (
+                        <div key={stock.symbol} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                          <div>
+                            <div className="font-bold text-sm tracking-wider">{stock.symbol}</div>
+                            <div className="text-[10px] text-gray-500">{stock.name}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-mono text-market-green font-bold text-sm">+{stock.changePercent.toFixed(2)}%</div>
+                            <div className="text-[10px] text-gray-400">₹{stock.price.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-gray-500 italic py-4 text-center">Loading market data...</div>
+                    )}
+                  </div>
                 </GlassCard>
-                <GlassCard className="p-6 h-[200px]">
-                  <h3 className="text-lg font-bold mb-2 text-deep-teal">Top Losers</h3>
-                  <div className="text-xs text-gray-400">Mock Data Module - Pending</div>
+                <GlassCard className="p-6 min-h-[200px]">
+                  <h3 className="text-lg font-bold mb-4 text-market-red flex items-center gap-2">
+                    <span className="text-xs tracking-widest bg-market-red/10 px-2 py-0.5 rounded">TOP LOSERS</span>
+                  </h3>
+                  <div className="space-y-3">
+                    {losers.length > 0 ? (
+                      losers.map((stock) => (
+                        <div key={stock.symbol} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                          <div>
+                            <div className="font-bold text-sm tracking-wider">{stock.symbol}</div>
+                            <div className="text-[10px] text-gray-500">{stock.name}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-mono text-market-red font-bold text-sm">{stock.changePercent.toFixed(2)}%</div>
+                            <div className="text-[10px] text-gray-400">₹{stock.price.toLocaleString()}</div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-gray-500 italic py-4 text-center">Loading market data...</div>
+                    )}
+                  </div>
                 </GlassCard>
               </div>
             </div>
@@ -114,6 +190,7 @@ function App() {
             </div>
           </motion.div>
         )}
+
 
         {activeTab === 'arena' && (
           <motion.div

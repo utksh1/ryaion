@@ -10,7 +10,8 @@ interface NavItem {
  * 3D Adaptive Navigation Pill
  * Smart navigation with scroll detection and hover expansion
  */
-export const PillBase: React.FC<{ activeSection: string; onSectionClick: (id: string) => void }> = ({ activeSection, onSectionClick }) => {
+
+export const PillBase: React.FC<{ activeSection: string; onSectionClick: (id: string) => void; isLoggedIn?: boolean }> = ({ activeSection, onSectionClick, isLoggedIn = false }) => {
   const [expanded, setExpanded] = useState(false)
   const [hovering, setHovering] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
@@ -22,8 +23,9 @@ export const PillBase: React.FC<{ activeSection: string; onSectionClick: (id: st
     { label: 'Oracle', id: 'oracle' },
     { label: 'Arena', id: 'arena' },
     { label: 'Vault', id: 'vault' },
-    { label: 'Login', id: 'login' },
+    ...(isLoggedIn ? [] : [{ label: 'Login', id: 'login' }]),
   ]
+
 
   // Spring animations for smooth motion
   const pillWidth = useSpring(140, { stiffness: 220, damping: 25, mass: 1 })

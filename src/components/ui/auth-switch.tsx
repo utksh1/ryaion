@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, User, Mail, Facebook, Twitter, Linkedin, Chrome, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Lock, User, Mail, Facebook, Twitter, Linkedin, Chrome, Loader2, CheckCircle2, ArrowLeft, AlertCircle } from "lucide-react";
+import { supabase } from "../../lib/supabaseClient";
 
 interface AuthSwitchProps {
     onSuccess?: () => void;
@@ -12,34 +13,86 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
+    // Form States
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [username, setUsername] = useState(""); // Only for signup metadata if needed
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
     const toggleAuth = () => {
         if (isLoading || isSuccess) return;
         setIsLogin(!isLogin);
+        setErrorMsg(null);
     };
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+        setErrorMsg(null);
 
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            if (isLogin) {
+                const { error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+                if (error) throw error;
+            } else {
+                const { error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            username: username,
+                        }
+                    }
+                });
+                if (error) throw error;
+            }
 
-        setIsLoading(false);
-        setIsSuccess(true);
+            setIsLoading(false);
+            setIsSuccess(true);
 
-        // Final redirect delay
-        setTimeout(() => {
-            onSuccess?.();
-            setIsSuccess(false);
-        }, 1500);
+            // Final redirect delay
+            setTimeout(() => {
+                onSuccess?.();
+                setIsSuccess(false);
+            }, 1500);
+
+        } catch (error: any) {
+            setIsLoading(false);
+            console.error("Auth error:", error);
+            setErrorMsg(error.message || "Authentication failed");
+        }
     };
 
+
+    const handleSocialAuth = async (provider: 'google' | 'facebook' | 'twitter' | 'linkedin') => {
+        setIsLoading(true);
+        setErrorMsg(null);
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: provider,
+                options: {
+                    redirectTo: window.location.origin, // Redirect back to this page after login
+                }
+            });
+            if (error) throw error;
+            // Note: The actual redirect happens automatically, so we might not reach here immediately
+        } catch (error: any) {
+            setIsLoading(false);
+            console.error("Social auth error:", error);
+            setErrorMsg(error.message || `Failed to sign in with ${provider}`);
+        }
+    };
+
+
     const socialIcons = [
-        { Icon: Chrome, color: "#EA4335", title: "Google" },
-        { Icon: Facebook, color: "#1877F2", title: "Facebook" },
-        { Icon: Twitter, color: "#1DA1F2", title: "Twitter" },
-        { Icon: Linkedin, color: "#0A66C2", title: "LinkedIn" }
-    ];
+        { Icon: Chrome, color: "#EA4335", title: "Google", provider: 'google' },
+        { Icon: Facebook, color: "#1877F2", title: "Facebook", provider: 'facebook' },
+        { Icon: Twitter, color: "#1DA1F2", title: "Twitter", provider: 'twitter' },
+        { Icon: Linkedin, color: "#0A66C2", title: "LinkedIn", provider: 'linkedin' }
+    ] as const;
 
     return (
         <div className="fixed inset-0 z-[100] bg-[#0a0a12] flex overflow-hidden font-plus-jakarta antialiased">
@@ -86,32 +139,64 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
                 {/* Sign Up Form Section */}
                 <div className={`absolute w-full lg:w-1/2 h-full flex flex-col items-center justify-center p-8 transition-all duration-1000 ease-in-out ${!isLogin ? 'left-0 opacity-100' : 'left-[-50%] opacity-0 pointer-events-none'}`}>
                     <form className="w-full max-w-[400px] flex flex-col items-center" onSubmit={handleAuth}>
-                        <h2 className="text-[52px] font-bold text-white mb-12 tracking-tighter uppercase italic font-bricolage">Sign up</h2>
+                        <h2 className="text-[52px] font-bold text-white mb-2 tracking-tighter uppercase italic font-bricolage">Sign up</h2>
+
+                        {errorMsg && (
+                            <div className="flex items-center gap-2 text-red-400 bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-lg mb-6 text-sm">
+                                <AlertCircle className="w-4 h-4" />
+                                {errorMsg}
+                            </div>
+                        )}
+                        {!errorMsg && <div className="mb-12"></div>}
+
 
                         <div className="w-full bg-white/5 border border-white/10 rounded-[55px] px-8 py-4 flex items-center mb-4 transition-all focus-within:bg-white/10 focus-within:border-[#6968A6]/50">
                             <User className="w-5 h-5 text-gray-500 mr-4" />
-                            <input disabled={isLoading} required type="text" placeholder="Username" className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg" />
+                            <input
+                                disabled={isLoading}
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                type="text"
+                                placeholder="Username"
+                                className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg"
+                            />
                         </div>
 
                         <div className="w-full bg-white/5 border border-white/10 rounded-[55px] px-8 py-4 flex items-center mb-4 transition-all focus-within:bg-white/10 focus-within:border-[#6968A6]/50">
                             <Mail className="w-5 h-5 text-gray-500 mr-4" />
-                            <input disabled={isLoading} required type="email" placeholder="Email" className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg" />
+                            <input
+                                disabled={isLoading}
+                                required
+                                type="email"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg"
+                            />
                         </div>
 
                         <div className="w-full bg-white/5 border border-white/10 rounded-[55px] px-8 py-4 flex items-center mb-6 transition-all focus-within:bg-white/10 focus-within:border-[#6968A6]/50">
                             <Lock className="w-5 h-5 text-gray-500 mr-4" />
-                            <input disabled={isLoading} required type="password" placeholder="Password" className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg" />
+                            <input
+                                disabled={isLoading}
+                                required
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg"
+                            />
                         </div>
 
-                        <button disabled={isLoading} type="submit" className="w-[180px] bg-[#6968A6] text-white rounded-[49px] py-4 uppercase font-bold text-base hover:bg-[#5a5991] transition-all mb-10 shadow-[0_0_20px_rgba(105,104,166,0.4)] active:scale-95 tracking-wide flex items-center justify-center gap-2">
+                        <button disabled={isLoading} type="submit" className="w-[180px] bg-[#6968A6] text-white rounded-[49px] py-4 uppercase font-bold text-base hover:bg-[#5a5991] transition-all mb-10 shadow-[0_0_20px_rgba(105,104,166,0.4)] active:scale-95 tracking-wide flex items-center justify-center gap-2 disabled:opacity-50">
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign up"}
                         </button>
 
                         <p className="text-[15px] text-gray-400 mb-6 font-medium">Or sign up with social platforms</p>
 
                         <div className="flex gap-4">
-                            {socialIcons.map(({ Icon, color }, idx) => (
-                                <div key={idx} className="w-12 h-12 border border-white/10 rounded-full flex items-center justify-center cursor-pointer hover:border-[#6968A6]/50 hover:bg-white/5 transition-all active:scale-90">
+                            {socialIcons.map(({ Icon, color, provider }, idx) => (
+                                <div key={idx} onClick={() => handleSocialAuth(provider)} className="w-12 h-12 border border-white/10 rounded-full flex items-center justify-center cursor-pointer hover:border-[#6968A6]/50 hover:bg-white/5 transition-all active:scale-90">
                                     <Icon className="w-5 h-5" style={{ color: color }} />
                                 </div>
                             ))}
@@ -122,27 +207,51 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
                 {/* Sign In Form Section */}
                 <div className={`absolute w-full lg:w-1/2 h-full flex flex-col items-center justify-center p-8 transition-all duration-1000 ease-in-out ${isLogin ? 'right-0 opacity-100' : 'right-[-50%] opacity-0 pointer-events-none'}`}>
                     <form className="w-full max-w-[400px] flex flex-col items-center" onSubmit={handleAuth}>
-                        <h2 className="text-[52px] font-bold text-white mb-12 tracking-tighter uppercase italic font-bricolage">Sign in</h2>
+                        <h2 className="text-[52px] font-bold text-white mb-2 tracking-tighter uppercase italic font-bricolage">Sign in</h2>
+
+                        {errorMsg && (
+                            <div className="flex items-center gap-2 text-red-400 bg-red-500/10 border border-red-500/20 px-4 py-2 rounded-lg mb-6 text-sm">
+                                <AlertCircle className="w-4 h-4" />
+                                {errorMsg}
+                            </div>
+                        )}
+                        {!errorMsg && <div className="mb-12"></div>}
 
                         <div className="w-full bg-white/5 border border-white/10 rounded-[55px] px-8 py-4 flex items-center mb-4 transition-all focus-within:bg-white/10 focus-within:border-[#6968A6]/50">
-                            <User className="w-5 h-5 text-gray-500 mr-4" />
-                            <input disabled={isLoading} required type="text" placeholder="Username" className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg" />
+                            <Mail className="w-5 h-5 text-gray-500 mr-4" />
+                            <input
+                                disabled={isLoading}
+                                required
+                                type="text"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg"
+                            />
                         </div>
 
                         <div className="w-full bg-white/5 border border-white/10 rounded-[55px] px-8 py-4 flex items-center mb-8 transition-all focus-within:bg-white/10 focus-within:border-[#6968A6]/50">
                             <Lock className="w-5 h-5 text-gray-500 mr-4" />
-                            <input disabled={isLoading} required type="password" placeholder="Password" className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg" />
+                            <input
+                                disabled={isLoading}
+                                required
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="bg-transparent border-none outline-none w-full text-white placeholder:text-gray-600 font-medium text-lg"
+                            />
                         </div>
 
-                        <button disabled={isLoading} type="submit" className="w-[180px] bg-[#6968A6] text-white rounded-[49px] py-4 uppercase font-bold text-base hover:bg-[#5a5991] transition-all mb-10 shadow-[0_0_20px_rgba(105,104,166,0.4)] active:scale-95 tracking-wide flex items-center justify-center gap-2">
+                        <button disabled={isLoading} type="submit" className="w-[180px] bg-[#6968A6] text-white rounded-[49px] py-4 uppercase font-bold text-base hover:bg-[#5a5991] transition-all mb-10 shadow-[0_0_20px_rgba(105,104,166,0.4)] active:scale-95 tracking-wide flex items-center justify-center gap-2 disabled:opacity-50">
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Login"}
                         </button>
 
                         <p className="text-[15px] text-gray-400 mb-6 font-medium">Or sign in with social platforms</p>
 
                         <div className="flex gap-4">
-                            {socialIcons.map(({ Icon, color }, idx) => (
-                                <div key={idx} className="w-12 h-12 border border-white/10 rounded-full flex items-center justify-center cursor-pointer hover:border-[#6968A6]/50 hover:bg-white/5 transition-all active:scale-90">
+                            {socialIcons.map(({ Icon, color, provider }, idx) => (
+                                <div key={idx} onClick={() => handleSocialAuth(provider)} className="w-12 h-12 border border-white/10 rounded-full flex items-center justify-center cursor-pointer hover:border-[#6968A6]/50 hover:bg-white/5 transition-all active:scale-90">
                                     <Icon className="w-5 h-5" style={{ color: color }} />
                                 </div>
                             ))}

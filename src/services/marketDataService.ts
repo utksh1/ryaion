@@ -1,11 +1,9 @@
-// Live Market Data Service - with CORS handling
 
-const ALPHA_VANTAGE_KEY = '6M5LOB77EZ5AJOSG';
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+import { supabase } from '../lib/supabaseClient';
 
 export interface LiveStockData {
     symbol: string;
-    name: string;
+    name: string; // We might need to map this if it's not in DB
     price: number;
     change: number;
     changePercent: number;
@@ -22,139 +20,125 @@ export interface MarketIndex {
     changePercent: number;
 }
 
-// Stock data with realistic base prices (updated Jan 2025)
-const STOCK_DATA: Record<string, { name: string; basePrice: number }> = {
-    'RELIANCE': { name: 'Reliance Industries', basePrice: 1407 },
-    'TCS': { name: 'Tata Consultancy Services', basePrice: 4050 },
-    'HDFCBANK': { name: 'HDFC Bank', basePrice: 1680 },
-    'INFY': { name: 'Infosys Ltd', basePrice: 1870 },
-    'ICICIBANK': { name: 'ICICI Bank', basePrice: 1280 },
-    'TATAMOTORS': { name: 'Tata Motors', basePrice: 780 },
-    'ZOMATO': { name: 'Zomato Ltd', basePrice: 265 },
-    'WIPRO': { name: 'Wipro Ltd', basePrice: 295 },
-    'SBIN': { name: 'State Bank of India', basePrice: 810 },
-    'BHARTIARTL': { name: 'Bharti Airtel', basePrice: 1620 },
+// Map symbols to full names (DB only stores symbols)
+const STOCK_NAMES: Record<string, string> = {
+    'RELIANCE': 'Reliance Industries',
+    'TCS': 'Tata Consultancy Services',
+    'HDFCBANK': 'HDFC Bank',
+    'INFY': 'Infosys Ltd',
+    'ICICIBANK': 'ICICI Bank',
+    'TATAMOTORS': 'Tata Motors',
+    'ZOMATO': 'Zomato Ltd',
+    'WIPRO': 'Wipro Ltd',
+    'SBIN': 'State Bank of India',
+    'BHARTIARTL': 'Bharti Airtel',
+    'ITC': 'ITC Limited'
 };
 
-// Try fetching from Alpha Vantage via CORS proxy
-async function fetchFromAlphaVantage(symbol: string): Promise<LiveStockData | null> {
-    try {
-        const apiUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}.BSE&apikey=${ALPHA_VANTAGE_KEY}`;
-        const url = CORS_PROXY + encodeURIComponent(apiUrl);
-
-        const response = await fetch(url, {
-            signal: AbortSignal.timeout(5000) // 5 second timeout
-        });
-
-        if (!response.ok) throw new Error('API failed');
-
-        const data = await response.json();
-        const quote = data['Global Quote'];
-
-        if (quote && quote['05. price']) {
-            const price = parseFloat(quote['05. price']);
-            const change = parseFloat(quote['09. change'] || '0');
-            const changePercent = parseFloat((quote['10. change percent'] || '0%').replace('%', ''));
-
-            return {
-                symbol,
-                name: STOCK_DATA[symbol]?.name || symbol,
-                price: Math.round(price * 100) / 100,
-                change: Math.round(change * 100) / 100,
-                changePercent: Math.round(changePercent * 100) / 100,
-                high: parseFloat(quote['03. high'] || price),
-                low: parseFloat(quote['04. low'] || price),
-                volume: formatVolume(parseInt(quote['06. volume'] || '0')),
-                timestamp: new Date().toISOString()
-            };
-        }
-    } catch (error) {
-        console.log(`Alpha Vantage failed for ${symbol}, using simulation`);
-    }
-    return null;
-}
-
-// Simulated live data with realistic fluctuations
-function getSimulatedData(symbol: string): LiveStockData | null {
-    const stock = STOCK_DATA[symbol];
-    if (!stock) return null;
-
-    // Create realistic daily volatility (±2%)
-    const volatility = 0.02;
-    const randomChange = (Math.random() - 0.5) * 2 * volatility;
-    const change = stock.basePrice * randomChange;
-    const price = stock.basePrice + change;
-    const changePercent = randomChange * 100;
-
-    return {
-        symbol,
-        name: stock.name,
-        price: Math.round(price * 100) / 100,
-        change: Math.round(change * 100) / 100,
-        changePercent: Math.round(changePercent * 100) / 100,
-        high: Math.round((price * 1.008) * 100) / 100,
-        low: Math.round((price * 0.992) * 100) / 100,
-        volume: `${(Math.random() * 5 + 1).toFixed(1)}Cr`,
-        timestamp: new Date().toISOString()
-    };
-}
-
-function formatVolume(vol: number): string {
-    if (vol >= 10000000) return `${(vol / 10000000).toFixed(1)}Cr`;
-    if (vol >= 100000) return `${(vol / 100000).toFixed(1)}L`;
-    if (vol >= 1000) return `${(vol / 1000).toFixed(1)}K`;
-    return vol.toString() || '0';
-}
-
-// Main fetch function
+// Fetch live stock from Supabase
 export async function fetchLiveStock(symbol: string): Promise<LiveStockData | null> {
-    const upperSymbol = symbol.toUpperCase();
+    try {
+        const { data, error } = await supabase
+            .from('stock_prices')
+            .select('*')
+            .eq('symbol', symbol.toUpperCase())
+            .single();
 
-    // Try API first
-    const apiData = await fetchFromAlphaVantage(upperSymbol);
-    if (apiData) return apiData;
+        if (error || !data) return null;
 
-    // Fallback to simulation
-    return getSimulatedData(upperSymbol);
+        return {
+            symbol: data.symbol,
+            name: STOCK_NAMES[data.symbol] || data.symbol,
+            price: data.price,
+            change: data.change,
+            changePercent: parseFloat((data.change_percent || '0').replace('%', '')),
+            high: data.price, // DB doesn't have high/low yet
+            low: data.price,  // DB doesn't have high/low yet
+            volume: '0',      // DB doesn't have volume yet
+            timestamp: data.last_updated
+        };
+    } catch (err) {
+        console.error("Error fetching stock:", symbol, err);
+        return null;
+    }
 }
 
-// Fetch multiple stocks
+// Fetch multiple stocks from Supabase
 export async function fetchMultipleStocks(symbols: string[]): Promise<LiveStockData[]> {
-    const results = await Promise.all(
-        symbols.map(s => fetchLiveStock(s))
-    );
-    return results.filter((r): r is LiveStockData => r !== null);
+    try {
+        const { data, error } = await supabase
+            .from('stock_prices')
+            .select('*')
+            .in('symbol', symbols.map(s => s.toUpperCase()));
+
+        if (error || !data) {
+            console.error("Supabase stock fetch error:", error);
+            return [];
+        }
+
+        return data.map((d: any) => ({
+            symbol: d.symbol,
+            name: STOCK_NAMES[d.symbol] || d.symbol,
+            price: d.price,
+            change: d.change,
+            changePercent: parseFloat((d.change_percent || '0').replace('%', '')),
+            high: d.price,
+            low: d.price,
+            volume: '0',
+            timestamp: d.last_updated
+        }));
+    } catch (err) {
+        console.error("Error fetching stocks:", err);
+        return [];
+    }
 }
 
 // Fetch all tracked stocks
 export async function fetchAllStocks(): Promise<LiveStockData[]> {
-    return fetchMultipleStocks(Object.keys(STOCK_DATA));
+    try {
+        const { data, error } = await supabase.from('stock_prices').select('*');
+        if (error || !data) return [];
+
+        return data.map((d: any) => ({
+            symbol: d.symbol,
+            name: STOCK_NAMES[d.symbol] || d.symbol,
+            price: d.price,
+            change: d.change,
+            changePercent: parseFloat((d.change_percent || '0').replace('%', '')),
+            high: d.price,
+            low: d.price,
+            volume: '0',
+            timestamp: d.last_updated
+        }));
+    } catch (err) {
+        return [];
+    }
 }
 
-// Fetch market indices
+// Fetch market indices from Supabase
 export async function fetchMarketIndices(): Promise<MarketIndex[]> {
-    // Simulated but realistic index data
-    const niftyBase = 23350;
-    const sensexBase = 77000;
+    try {
+        const { data, error } = await supabase
+            .from('market_indices')
+            .select('*');
 
-    const niftyChange = (Math.random() - 0.5) * 400;
-    const sensexChange = (Math.random() - 0.5) * 1200;
-
-    return [
-        {
-            name: 'NIFTY 50',
-            value: Math.round(niftyBase + niftyChange),
-            change: Math.round(niftyChange),
-            changePercent: Math.round((niftyChange / niftyBase) * 10000) / 100
-        },
-        {
-            name: 'SENSEX',
-            value: Math.round(sensexBase + sensexChange),
-            change: Math.round(sensexChange),
-            changePercent: Math.round((sensexChange / sensexBase) * 10000) / 100
+        if (error || !data) {
+            console.error("Supabase index fetch error:", error);
+            return [];
         }
-    ];
+
+        return data.map((d: any) => ({
+            name: d.symbol, // We stored 'NIFTY50' in 'symbol' column
+            value: d.value,
+            change: d.change,
+            changePercent: parseFloat((d.change_percent || '0').replace('%', ''))
+        }));
+    } catch (err) {
+        console.error("Error fetching indices:", err);
+        return [];
+    }
 }
+
 
 // Get market context for AI
 export async function getMarketContext(): Promise<string> {
