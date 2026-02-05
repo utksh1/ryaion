@@ -83,10 +83,18 @@ export const AppLayout = ({ children, activeTab, onNavigate, isLoggedIn = false 
                                             >
                                                 <div className="p-3 border-b border-white/5">
                                                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Account</p>
-                                                    <div className="flex items-center gap-2 p-2 hover:bg-white/5 rounded-lg cursor-pointer transition-colors text-sm text-gray-300 hover:text-white">
+
+                                                    <div
+                                                        onClick={() => {
+                                                            onNavigate('settings');
+                                                            setShowProfileMenu(false);
+                                                        }}
+                                                        className="flex items-center gap-2 p-2 hover:bg-white/5 rounded-lg cursor-pointer transition-colors text-sm text-gray-300 hover:text-white"
+                                                    >
                                                         <Settings className="w-4 h-4" />
                                                         <span>Settings</span>
                                                     </div>
+
                                                 </div>
                                                 <div className="p-1">
                                                     <button

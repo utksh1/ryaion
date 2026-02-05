@@ -12,7 +12,10 @@ import { AskRya } from "./components/askrya/AskRya";
 import { AuthSwitch } from "./components/ui/auth-switch";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "./lib/supabaseClient";
+
 import { fetchAllStocks, type LiveStockData } from "./services/marketDataService";
+import { SettingsView } from "./components/settings/SettingsView";
+
 
 function App() {
   const [activeTab, setActiveTab] = useState("matrix");
@@ -216,6 +219,7 @@ function App() {
           </motion.div>
         )}
 
+
         {activeTab === 'login' && (
           <motion.div
             key="login"
@@ -230,6 +234,19 @@ function App() {
             />
           </motion.div>
         )}
+
+        {activeTab === 'settings' && (
+          <motion.div
+            key="settings"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            className="h-full"
+          >
+            <SettingsView />
+          </motion.div>
+        )}
+
       </AnimatePresence>
     </AppLayout>
   );
