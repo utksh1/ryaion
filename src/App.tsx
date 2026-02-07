@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "./components/layout/AppLayout";
 import { GlassCard } from "./components/ui/GlassCard";
 import { CyberButton } from "./components/ui/CyberButton";
+import { MarketPulse } from "./components/matrix/MarketPulse";
 import { NeuralGrid } from "./components/matrix/NeuralGrid";
 import { HypeMeter } from "./components/matrix/HypeMeter";
 import { OracleView } from "./components/oracle/OracleView";
@@ -10,42 +11,82 @@ import { BattleArena } from "./components/arena/BattleArena";
 import { PortfolioVault } from "./components/vault/PortfolioVault";
 import { AskRya } from "./components/askrya/AskRya";
 import { AuthSwitch } from "./components/ui/auth-switch";
+import { StockDetailModal } from "./components/matrix/StockDetailModal";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "./lib/supabaseClient";
+import { cn } from "./lib/utils";
 
-import { fetchAllStocks, type LiveStockData } from "./services/marketDataService";
+import { fetchAllStocks, fetchApifyFinanceData, saveStocksToSupabase, subscribeToMarketUpdates, type LiveStockData } from "./services/marketDataService";
 import { SettingsView } from "./components/settings/SettingsView";
+import { LandingPage } from "./components/pages/LandingPage";
 
 
 function App() {
-  const [activeTab, setActiveTab] = useState("matrix");
+  const [activeTab, setActiveTab] = useState("landing"); // Default to landing
   const [showOracleModal, setShowOracleModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [marketData, setMarketData] = useState<LiveStockData[]>([]);
+  const [selectedStock, setSelectedStock] = useState<LiveStockData | null>(null);
 
   useEffect(() => {
     // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session);
+      if (session) {
+        setIsLoggedIn(true);
+        setActiveTab("matrix"); // Auto-redirect to dashboard if logged in
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(!!session);
+      const loggedIn = !!session;
+      setIsLoggedIn(loggedIn);
+      if (loggedIn && activeTab === 'landing') {
+        setActiveTab('matrix');
+      } else if (!loggedIn && activeTab !== 'landing' && activeTab !== 'login') {
+        setActiveTab('landing');
+      }
     });
 
     // Fetch Market Data
     const loadMarketData = async () => {
-      const data = await fetchAllStocks();
-      setMarketData(data);
+      // Try Apify first (User requested scrape data)
+      const apifyData = await fetchApifyFinanceData();
+      if (apifyData.length > 0) {
+        setMarketData(apifyData);
+        saveStocksToSupabase(apifyData);
+      } else {
+        // Fallback to existing logic
+        const data = await fetchAllStocks();
+        setMarketData(data);
+      }
     };
     loadMarketData();
-    // Poll every 30 seconds
-    const interval = setInterval(loadMarketData, 30000);
+    // Poll every 15 seconds as requested (backup/sync)
+    const interval = setInterval(loadMarketData, 15000);
+
+    // Subscribe to Real-Time Updates (Socket.io)
+    const unsubscribeSocket = subscribeToMarketUpdates((updatedStock) => {
+      setMarketData(prevData => {
+        const index = prevData.findIndex(s => s.symbol === updatedStock.symbol);
+        if (index !== -1) {
+          const newData = [...prevData];
+          // Merge update, preserving history if not in update (it isn't)
+          newData[index] = {
+            ...newData[index],
+            ...updatedStock,
+            history: newData[index].history
+          };
+          return newData;
+        }
+        return prevData;
+      });
+    });
 
     return () => {
       subscription.unsubscribe();
       clearInterval(interval);
+      unsubscribeSocket();
     };
   }, []);
 
@@ -65,9 +106,26 @@ function App() {
     }
   };
 
+  const handleStockClick = async (stock: LiveStockData) => {
+    // Show modal immediately with current data
+    setSelectedStock(stock);
+    // Fetch full data (with history) in background to populate chart
+    const { fetchLiveStock } = await import("./services/marketDataService");
+    const fullStock = await fetchLiveStock(stock.symbol);
+    if (fullStock) {
+      setSelectedStock(fullStock);
+    }
+  };
+
+  if (activeTab === 'landing') {
+    return <LandingPage onGetStarted={() => setActiveTab('login')} />;
+  }
+
   return (
     <AppLayout activeTab={activeTab} onNavigate={handleNavigate} isLoggedIn={isLoggedIn}>
       <AskRya />
+      <StockDetailModal stock={selectedStock} onClose={() => setSelectedStock(null)} />
+
       <AnimatePresence mode="wait">
         {/* Oracle Modal Overlay */}
         {showOracleModal && <OracleView onClose={() => setShowOracleModal(false)} />}
@@ -85,6 +143,7 @@ function App() {
           >
             {/* Left Col - Market Matrix */}
             <div className="md:col-span-8 flex flex-col gap-6">
+              <MarketPulse />
 
               {/* Minimal 3D Hero Section */}
               <GlassCard className="relative h-[160px] md:h-[180px] overflow-hidden flex items-center justify-center border-white/5 shadow-lg bg-white/[0.01] backdrop-blur-2xl">
@@ -113,7 +172,7 @@ function App() {
                   </h2>
                   <CyberButton variant="ghost" className="text-[10px] border border-white/5 opacity-40">Matrix Config</CyberButton>
                 </div>
-                <NeuralGrid />
+                <NeuralGrid onStockClick={handleStockClick} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -124,7 +183,11 @@ function App() {
                   <div className="space-y-3">
                     {gainers.length > 0 ? (
                       gainers.map((stock) => (
-                        <div key={stock.symbol} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                        <div
+                          key={stock.symbol}
+                          className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0 hover:bg-white/5 p-2 rounded cursor-pointer transition-colors"
+                          onClick={() => handleStockClick(stock)}
+                        >
                           <div>
                             <div className="font-bold text-sm tracking-wider">{stock.symbol}</div>
                             <div className="text-[10px] text-gray-500">{stock.name}</div>
@@ -147,7 +210,11 @@ function App() {
                   <div className="space-y-3">
                     {losers.length > 0 ? (
                       losers.map((stock) => (
-                        <div key={stock.symbol} className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                        <div
+                          key={stock.symbol}
+                          className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0 hover:bg-white/5 p-2 rounded cursor-pointer transition-colors"
+                          onClick={() => handleStockClick(stock)}
+                        >
                           <div>
                             <div className="font-bold text-sm tracking-wider">{stock.symbol}</div>
                             <div className="text-[10px] text-gray-500">{stock.name}</div>
@@ -174,16 +241,32 @@ function App() {
                 <h3 className="text-xl font-bricolage mb-4 flex items-center gap-2">
                   <span className="w-2 h-2 bg-market-green rounded-full animate-ping" />
                   AI ORACLE
+                  <span className="ml-auto text-[10px] opacity-40 font-normal normal-case tracking-normal">Click cards for stats</span>
                 </h3>
                 <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} onClick={() => setShowOracleModal(true)} className="p-4 rounded-xl bg-black/40 border border-white/5 text-sm hover:border-lavender/50 transition-colors cursor-pointer group">
-                      <div className="flex justify-between mb-2">
-                        <span className="font-bold tracking-wider">TATASTEEL</span>
-                        <span className="text-dusty-rose text-xs font-bold border border-dusty-rose/20 px-2 py-0.5 rounded bg-dusty-rose/5">BULLISH</span>
+                  {(marketData.length > 0 ? marketData.slice(0, 3) : []).map((stock) => (
+                    <div
+                      key={stock.symbol}
+                      onClick={() => handleStockClick(stock)}
+                      className="p-3 rounded-lg bg-white/5 border border-white/5 hover:border-lavender/40 hover:bg-white/10 transition-all cursor-pointer group active:scale-[0.98]"
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold tracking-wider text-sm">{stock.symbol}</span>
+                        <span className={cn("text-[9px] font-black border px-1.5 py-0.5 rounded",
+                          stock.changePercent > 0 ? "text-market-green border-market-green/20 bg-market-green/5" : "text-market-red border-market-red/20 bg-market-red/5"
+                        )}>
+                          {stock.changePercent > 0 ? 'BULLISH' : 'BEARISH'}
+                        </span>
                       </div>
-                      <p className="text-gray-400 text-xs italic group-hover:text-gray-300">"Main character energy. Steel cycle looking feral."</p>
+                      <p className="text-gray-500 text-[11px] leading-tight line-clamp-2 group-hover:text-gray-300">
+                        {stock.changePercent > 1.5 ? "Strong bullish divergence detected in neural grid." :
+                          stock.changePercent < -1.5 ? "Heavy distribution pattern forming in the matrix." :
+                            "Neural channels indicate consolidation near support."}
+                      </p>
                     </div>
+                  ))}
+                  {marketData.length === 0 && [1, 2, 3].map(i => (
+                    <div key={i} className="h-20 bg-white/5 rounded-xl animate-pulse" />
                   ))}
                 </div>
                 <div className="mt-6">
@@ -230,7 +313,7 @@ function App() {
           >
             <AuthSwitch
               onSuccess={() => handleNavigate('matrix')}
-              onBackToDashboard={() => setActiveTab('matrix')}
+              onBackToDashboard={() => setActiveTab('landing')}
             />
           </motion.div>
         )}

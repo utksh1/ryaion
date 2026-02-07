@@ -5,9 +5,10 @@ import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 
 interface StockCardProps {
     stock: StockData;
+    onClick?: () => void;
 }
 
-export const StockCard = ({ stock }: StockCardProps) => {
+export const StockCard = ({ stock, onClick }: StockCardProps) => {
     const isPositive = stock.change >= 0;
 
     const sentimentColors = {
@@ -18,10 +19,14 @@ export const StockCard = ({ stock }: StockCardProps) => {
     };
 
     return (
-        <GlassCard hoverEffect className={cn(
-            "p-4 border-l-4 transition-all duration-300",
-            isPositive ? "border-l-dusty-rose" : "border-l-deep-teal"
-        )}>
+        <GlassCard
+            hoverEffect
+            onClick={onClick}
+            className={cn(
+                "p-4 border-l-4 transition-all duration-300 cursor-pointer",
+                isPositive ? "border-l-dusty-rose" : "border-l-deep-teal"
+            )}
+        >
             <div className="flex justify-between items-start mb-2">
                 <div>
                     <h4 className="font-bold text-lg font-bricolage tracking-tight">{stock.symbol}</h4>
@@ -45,7 +50,7 @@ export const StockCard = ({ stock }: StockCardProps) => {
                         isPositive ? "text-dusty-rose" : "text-deep-teal"
                     )}>
                         {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                        <span>{stock.change > 0 && '+'}{stock.change} ({stock.changePercent}%)</span>
+                        <span>{stock.change > 0 ? '+' : ''}{stock.change.toFixed(2)} ({stock.changePercent.toFixed(2)}%)</span>
                     </div>
                 </div>
 

@@ -1,29 +1,32 @@
 {
-  "name": "ryaion-market-data-mcp",
-  "version": "1.0.0",
-  "description": "MCP server for live Indian stock market data",
-  "main": "index.js",
-  "bin": {
-    "ryaion-market-data": "./index.js"
-  },
-  "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Test not configured\""
-  },
-  "keywords": [
-    "mcp",
-    "stocks",
-    "india",
-    "nse",
-    "bse"
-  ],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "@supabase/supabase-js": "^2.93.1",
-    "cheerio": "^1.0.0",
-    "dotenv": "^17.2.3",
-    "node-fetch": "^2.7.0"
-  }
+    "name": "ryaion-backend",
+    "version": "1.0.0",
+    "description": "Backend API for AI Stock Intelligence Platform",
+    "main": "src/server.ts",
+    "scripts": {
+        "start": "ts-node src/server.ts",
+        "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+        "build": "tsc"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@supabase/supabase-js": "^2.39.3",
+        "@types/socket.io": "^3.0.1",
+        "cors": "^2.8.5",
+        "dotenv": "^16.4.1",
+        "express": "^4.18.2",
+        "express-rate-limit": "^8.2.1",
+        "socket.io": "^4.8.3",
+        "technicalindicators": "^3.1.0"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/express": "^4.17.21",
+        "@types/node": "^20.11.16",
+        "nodemon": "^3.0.3",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
+    }
 }

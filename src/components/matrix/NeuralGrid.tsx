@@ -3,7 +3,11 @@ import { fetchAllStocks, type LiveStockData } from "../../services/marketDataSer
 import { StockCard } from "./StockCard";
 import { motion } from "framer-motion";
 
-export const NeuralGrid = () => {
+interface NeuralGridProps {
+    onStockClick?: (stock: LiveStockData) => void;
+}
+
+export const NeuralGrid = ({ onStockClick }: NeuralGridProps) => {
     const [stocks, setStocks] = useState<LiveStockData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -59,20 +63,22 @@ export const NeuralGrid = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                 >
-                    <StockCard stock={{
-                        id: stock.symbol,
-                        symbol: stock.symbol,
-                        name: stock.name,
-                        price: stock.price,
-                        change: stock.change,
-                        changePercent: stock.changePercent,
-                        sentiment: stock.changePercent > 1.5 ? 'hype' :
-                            stock.changePercent > 0.5 ? 'fomo' :
-                                stock.changePercent > -0.5 ? 'neutral' : 'panic',
-                        aura: Math.min(100, Math.max(10, 50 + stock.changePercent * 15)),
-                        marketCap: '-',
-                        volume: stock.volume
-                    }} />
+                    <StockCard
+                        onClick={() => onStockClick?.(stock)}
+                        stock={{
+                            id: stock.symbol,
+                            symbol: stock.symbol,
+                            name: stock.name,
+                            price: stock.price,
+                            change: stock.change,
+                            changePercent: stock.changePercent,
+                            sentiment: stock.changePercent > 1.5 ? 'hype' :
+                                stock.changePercent > 0.5 ? 'fomo' :
+                                    stock.changePercent > -0.5 ? 'neutral' : 'panic',
+                            aura: Math.round(Math.min(100, Math.max(10, 50 + stock.changePercent * 15))),
+                            marketCap: '-',
+                            volume: stock.volume
+                        }} />
                 </motion.div>
             ))}
         </div>

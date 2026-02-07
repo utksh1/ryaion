@@ -44,12 +44,9 @@ export const OracleView = ({ onClose }: OracleViewProps) => {
                         <BrainCircuit size={32} className="text-dusty-rose animate-pulse" />
                     </div>
 
-                    <h2 className="text-3xl font-bricolage font-bold text-center mb-2">
+                    <h2 className="text-3xl font-bricolage font-bold text-center mb-6">
                         AI ORACLE <span className="text-dusty-rose">V3.0</span>
                     </h2>
-                    <p className="text-gray-400 text-center mb-2 max-w-sm">
-                        Enter a stock symbol for neural decoding. Powered by Nemotron AI.
-                    </p>
                     <div className="flex items-center gap-1 text-xs text-lavender mb-6">
                         <Sparkles size={12} />
                         <span>Real AI Analysis</span>

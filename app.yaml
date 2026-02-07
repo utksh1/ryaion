@@ -1,0 +1,47 @@
+name: ryaion
+services:
+  - name: ryaion-backend
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: <YOUR_GITHUB_USERNAME>/ryaion
+    dockerfile_path: backend/Dockerfile
+    source_dir: backend
+    http_port: 3001
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /
+    envs:
+      - key: VITE_SUPABASE_URL
+        scope: RUN_TIME
+        value: https://jzqhvzefhoabxfqydgoj.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        scope: RUN_TIME
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        scope: RUN_TIME
+      - key: GEMINI_API_KEY
+        scope: RUN_TIME
+      - key: GENAI_AGENT_URL
+        scope: RUN_TIME
+        value: https://e5terrvonwjpdpzsjfge6hkr.agents.do-ai.run/api/v1/chat/completions
+      - key: GENAI_AGENT_KEY
+        scope: RUN_TIME
+
+static_sites:
+  - name: ryaion-frontend
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: <YOUR_GITHUB_USERNAME>/ryaion
+    build_command: npm install && npm run build
+    output_dir: dist
+    envs:
+      - key: VITE_SUPABASE_URL
+        scope: BUILD_TIME
+        value: https://jzqhvzefhoabxfqydgoj.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        scope: BUILD_TIME
+      - key: VITE_BASE_URL
+        scope: BUILD_TIME
+        value: ${ryaion-backend.PUBLIC_URL}

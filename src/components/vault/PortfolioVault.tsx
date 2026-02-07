@@ -1,8 +1,9 @@
 import { GlassCard } from "../ui/GlassCard";
 import { CyberButton } from "../ui/CyberButton";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TrendingUp, Wallet, DollarSign, History } from "lucide-react";
 import { cn } from "../../lib/utils";
+import { fetchLiveStock } from "../../services/marketDataService";
 
 interface Holding {
     symbol: string;
@@ -12,18 +13,44 @@ interface Holding {
 }
 
 export const PortfolioVault = () => {
-    // Mock Holdings
-    const [holdings] = useState<Holding[]>([
-        { symbol: "RELIANCE", qty: 25, avgPrice: 2450, ltp: 2980.50 },
-        { symbol: "ZOMATO", qty: 1000, avgPrice: 110, ltp: 185.50 },
-        { symbol: "HDFCBANK", qty: 50, avgPrice: 1600, ltp: 1450.75 },
+    // Mock Holdings - In real app, fetch from DB
+    const [holdings, setHoldings] = useState<Holding[]>([
+        { symbol: "RELIANCE", qty: 25, avgPrice: 2450, ltp: 0 },
+        { symbol: "ZOMATO", qty: 1000, avgPrice: 110, ltp: 0 },
+        { symbol: "HDFCBANK", qty: 50, avgPrice: 1600, ltp: 0 },
+        { symbol: "TATAMOTORS", qty: 100, avgPrice: 450, ltp: 0 },
     ]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const updatePrices = async () => {
+            const updatedHoldings = await Promise.all(holdings.map(async (h) => {
+                const stock = await fetchLiveStock(h.symbol);
+                return {
+                    ...h,
+                    ltp: stock ? stock.price : h.avgPrice // Fallback to avgPrice if fetch fails
+                };
+            }));
+            setHoldings(updatedHoldings);
+            setLoading(false);
+        };
+
+        updatePrices();
+        const interval = setInterval(updatePrices, 30000); // Update every 30s
+        return () => clearInterval(interval);
+    }, []); // Run once on mount (and setup interval)
 
     const cashBalance = 1000000; // 10L
     const totalInvested = holdings.reduce((acc, h) => acc + (h.qty * h.avgPrice), 0);
-    const currentValue = holdings.reduce((acc, h) => acc + (h.qty * h.ltp), 0);
+    const currentValue = holdings.reduce((acc, h) => acc + (h.qty * (h.ltp || h.avgPrice)), 0);
     const totalPnL = currentValue - totalInvested;
-    const pnlPercent = (totalPnL / totalInvested) * 100;
+    const pnlPercent = totalInvested > 0 ? (totalPnL / totalInvested) * 100 : 0;
+
+    if (loading) {
+        return <div className="h-full flex items-center justify-center text-market-green animate-pulse">
+            ACCESSING VAULT...
+        </div>;
+    }
 
     return (
         <div className="h-full flex flex-col gap-6">
@@ -59,7 +86,7 @@ export const PortfolioVault = () => {
                         "text-2xl font-mono font-bold",
                         totalPnL >= 0 ? "text-market-green" : "text-sangria-red"
                     )}>
-                        {totalPnL >= 0 ? '+' : ''}₹{totalPnL.toLocaleString()}
+                        {totalPnL >= 0 ? '+' : ''}₹{Math.abs(totalPnL).toLocaleString()}
                         <span className="text-sm ml-2 opacity-80">({pnlPercent.toFixed(2)}%)</span>
                     </div>
                 </GlassCard>
@@ -93,8 +120,8 @@ export const PortfolioVault = () => {
                                     <tr key={h.symbol} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                                         <td className="p-4 font-bold">{h.symbol}</td>
                                         <td className="p-4 font-mono">{h.qty}</td>
-                                        <td className="p-4 font-mono">₹{h.avgPrice}</td>
-                                        <td className="p-4 font-mono">₹{h.ltp}</td>
+                                        <td className="p-4 font-mono">₹{h.avgPrice.toLocaleString()}</td>
+                                        <td className="p-4 font-mono">₹{h.ltp.toLocaleString()}</td>
                                         <td className={cn("p-4 font-mono font-bold text-right", isProfitable ? "text-market-green" : "text-sangria-red")}>
                                             {isProfitable ? '+' : ''}{pnl.toLocaleString()}
                                         </td>

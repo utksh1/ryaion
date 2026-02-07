@@ -1,7 +1,7 @@
-// OpenRouter API Configuration
-const OPENROUTER_API_KEY = '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';
-const MODEL = 'xiaomi/mimo-v2-flash:free';
-const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+// AI Configuration (Proxied through backend for security)
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3001';
+const BACKEND_URL = `${BASE_URL}/api/v1`;
+const API_URL = `${BACKEND_URL}/ai/chat`;
 
 import { getMarketContext } from './marketDataService';
 
@@ -23,28 +23,20 @@ export const chatWithAI = async (messages: ChatMessage[]): Promise<string> => {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.origin,
-                'X-Title': 'Ryaion Finance'
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                model: MODEL,
-                messages: messages,
-                max_tokens: 500,
-                temperature: 0.7
-            })
+            body: JSON.stringify({ messages })
         });
 
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status}`);
+            throw new Error(`AI Gateway Error: ${response.status}`);
         }
 
         const data = await response.json();
-        return data.choices[0]?.message?.content || 'No response from AI.';
+        return data.content || 'No response from AI.';
     } catch (error) {
         console.error('AI Chat Error:', error);
-        return "Connection issue. Please try again.";
+        return "Intelligence system link disrupted. Please try again.";
     }
 };
 

@@ -11,6 +11,7 @@ export interface LiveStockData {
     low: number;
     volume: string;
     timestamp: string;
+    history?: { time: string; fullDate: string; price: number }[];
 }
 
 export interface MarketIndex {
@@ -35,9 +36,71 @@ const STOCK_NAMES: Record<string, string> = {
     'ITC': 'ITC Limited'
 };
 
-// Fetch live stock from Supabase
+import { io } from "socket.io-client";
+
+// ... previous code
+
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3001';
+const BACKEND_URL = `${BASE_URL}/api/v1`;
+const SOCKET_URL = BASE_URL;
+
+export const socket = io(SOCKET_URL, {
+    transports: ['websocket'], // Force websocket
+    autoConnect: true
+});
+
+export const subscribeToMarketUpdates = (callback: (data: LiveStockData) => void) => {
+    socket.on('price_update', (data: any) => {
+        // Map backend data to frontend model if needed
+        // Backend sends object that matches LiveStockData mostly
+        const formatted: LiveStockData = {
+            symbol: data.symbol,
+            name: STOCK_NAMES[data.symbol] || data.symbol,
+            price: data.price,
+            change: data.change,
+            changePercent: parseFloat((data.change_percent || '0').replace('%', '')),
+            high: data.high || data.price,
+            low: data.low || data.price,
+            volume: data.volume || '0',
+            timestamp: data.last_updated,
+            // History not sent in real-time update, keep existing or merge?
+            // Usually we just update the current price point.
+        };
+        callback(formatted);
+    });
+
+    return () => {
+        socket.off('price_update');
+    };
+};
+
+async function fetchStockHistory(symbol: string): Promise<{ time: string; fullDate: string; price: number }[]> {
+    try {
+        const response = await fetch(`${BACKEND_URL}/stocks/${symbol}/chart?timeframe=1D`);
+        if (!response.ok) return [];
+
+        const data = await response.json();
+        // Backend returns { candles: { t, o, h, l, c }[] }
+        if (data.candles && Array.isArray(data.candles)) {
+            return data.candles.map((c: any) => ({
+                time: new Date(c.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), // Intraday time
+                fullDate: c.t,
+                price: c.c
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error("Error fetching stock history:", error);
+        return []; // Fallback empty
+    }
+}
+
+// Fetch live stock from Supabase + Backend History
 export async function fetchLiveStock(symbol: string): Promise<LiveStockData | null> {
     try {
+        // 1. Fetch basic data (Supabase or Mock)
+        let basicData: LiveStockData | null = null;
+
         const { data, error } = await supabase
             .from('stock_prices')
             .select('*')
@@ -45,22 +108,32 @@ export async function fetchLiveStock(symbol: string): Promise<LiveStockData | nu
             .single();
 
         if (error || !data) {
-            console.warn("Supabase fetchStock/fetchMultipleStocks failed, using mock data");
-            const mock = getMockStocks().find(s => s.symbol === symbol.toUpperCase());
-            return mock || null;
+            console.warn("Supabase fetchStock failed, using mock data");
+            basicData = getMockStocks().find(s => s.symbol === symbol.toUpperCase()) || null;
+        } else {
+            basicData = {
+                symbol: data.symbol,
+                name: STOCK_NAMES[data.symbol] || data.symbol,
+                price: data.price,
+                change: data.change,
+                changePercent: parseFloat((data.change_percent || '0').replace('%', '')),
+                high: data.price, // DB might need high/low columns if we want real ranges
+                low: data.price,
+                volume: '0',
+                timestamp: data.last_updated
+            };
         }
 
+        if (!basicData) return null;
+
+        // 2. Fetch History (Backend)
+        const history = await fetchStockHistory(symbol);
+
         return {
-            symbol: data.symbol,
-            name: STOCK_NAMES[data.symbol] || data.symbol,
-            price: data.price,
-            change: data.change,
-            changePercent: parseFloat((data.change_percent || '0').replace('%', '')),
-            high: data.price,
-            low: data.price,
-            volume: '0',
-            timestamp: data.last_updated
+            ...basicData,
+            history
         };
+
     } catch (err) {
         console.error("Error fetching stock:", symbol, err);
         const mock = getMockStocks().find(s => s.symbol === symbol.toUpperCase());
@@ -164,7 +237,7 @@ export async function fetchMarketIndices(): Promise<MarketIndex[]> {
 
 function getMockIndices(): MarketIndex[] {
     return [
-        { name: 'NIFTY50', value: 19427, change: 120.5, changePercent: 0.62 },
+        { name: 'NIFTY 50', value: 19427, change: 120.5, changePercent: 0.62 },
         { name: 'SENSEX', value: 66170.84, change: 350.2, changePercent: 0.53 }
     ];
 }
@@ -211,5 +284,113 @@ export function calculateMarketSentiment(stocks: LiveStockData[]): {
         return { label: 'NEUTRAL DRIFT', value: 45 + avgChange * 10, trend: 'neutral' };
     } else {
         return { label: 'BEARISH PRESSURE', value: Math.max(10, 45 + avgChange * 5), trend: 'bearish' };
+    }
+}
+
+// Apify Interfaces
+interface ApifyFinanceItem {
+    ticker: string;
+    data: {
+        dateTimeUTC: string;
+        price: {
+            lastPrice: number;
+            change: number;
+            changePct: number;
+        };
+        volume: number | null;
+    }[];
+}
+
+// Fetch data from Apify
+export async function fetchApifyFinanceData(): Promise<LiveStockData[]> {
+    const APIFY_TOKEN = import.meta.env.VITE_APIFY_TOKEN;
+    const APIFY_URL = `https://api.apify.com/v2/acts/canadesk~google-finance/runs/last/dataset/items?token=${APIFY_TOKEN}`;
+
+    try {
+        const response = await fetch(APIFY_URL);
+        if (!response.ok) {
+            throw new Error(`Apify fetch failed: ${response.statusText}`);
+        }
+
+        const data: ApifyFinanceItem[] = await response.json();
+
+        return data.filter(item => {
+            // Only allow symbols that match our Indian list (uppercase comparison)
+            const ticker = item.ticker.split(':')[0].toUpperCase().replace(/^NSE:|^BSE:/, '');
+            return Object.keys(STOCK_NAMES).includes(ticker);
+        }).map(item => {
+            const latest = item.data && item.data.length > 0 ? item.data[0] : null;
+            const ticker = item.ticker.split(':')[0].toUpperCase().replace(/^NSE:|^BSE:/, '');
+
+            // Format history for graph (ascending time)
+            const history = item.data ? [...item.data].reverse().map(d => ({
+                time: new Date(d.dateTimeUTC).toLocaleDateString([], { month: 'short', day: 'numeric' }),
+                fullDate: d.dateTimeUTC,
+                price: d.price.lastPrice
+            })) : [];
+
+            if (!latest) {
+                return {
+                    symbol: ticker,
+                    name: STOCK_NAMES[ticker] || ticker,
+                    price: 0,
+                    change: 0,
+                    changePercent: 0,
+                    high: 0,
+                    low: 0,
+                    volume: '0',
+                    timestamp: new Date().toISOString(),
+                    history
+                };
+            }
+
+            return {
+                symbol: ticker,
+                name: STOCK_NAMES[ticker] || ticker,
+                price: latest.price.lastPrice,
+                change: latest.price.change,
+                changePercent: latest.price.changePct * 100,
+                high: latest.price.lastPrice,
+                low: latest.price.lastPrice,
+                volume: latest.volume ? latest.volume.toString() : '0',
+                timestamp: latest.dateTimeUTC,
+                history
+            };
+        });
+    } catch (err) {
+        console.error("Error fetching from Apify:", err);
+        return [];
+    }
+}
+
+// Save stocks to Supabase
+export async function saveStocksToSupabase(stocks: LiveStockData[]) {
+    try {
+        const updates = stocks.map(stock => ({
+            symbol: stock.symbol,
+            price: stock.price,
+            change: stock.change,
+            change_percent: stock.changePercent + '%', // Assuming DB uses string with % or number. Based on read: 'd.change_percent || '0').replace('%', '')' it seems DB has %.
+            last_updated: stock.timestamp,
+            // We might be missing fields like 'volume', 'high' in DB? 
+            // Based on fetch: select('*'). Let's hope upsert ignores extra or we match schema.
+            // Safe bet: Upsert only known fields.
+        }));
+
+        // We can't batch upsert easily if we don't know unique constraints for sure, but usually 'symbol' is PK/Unique.
+        // Let's try upserting one by one or batch if supported. Supabase supports batch upsert.
+        // However, checks for existing rows are needed.
+
+        const { error } = await supabase
+            .from('stock_prices')
+            .upsert(updates, { onConflict: 'symbol' }); // Assuming symbol is unique constraint
+
+        if (error) {
+            console.error("Error saving to Supabase:", error);
+        } else {
+            console.log("Successfully saved stock data to Supabase");
+        }
+    } catch (err) {
+        console.error("Exception saving stocks:", err);
     }
 }
