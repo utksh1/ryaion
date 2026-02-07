@@ -29,54 +29,62 @@ function App() {
   const [selectedStock, setSelectedStock] = useState<LiveStockData | null>(null);
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setIsLoggedIn(true);
-        setActiveTab("matrix"); // Auto-redirect to dashboard if logged in
-      }
-    });
+    // 1. Initial Session Check (and hash cleanup for OAuth)
+    const initAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const hasSession = !!session;
+      setIsLoggedIn(hasSession);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (hasSession) {
+        if (activeTab === 'landing' || activeTab === 'login') {
+          setActiveTab("matrix");
+        }
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
+    };
+
+    initAuth();
+
+    // 2. Global Auth Listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       const loggedIn = !!session;
       setIsLoggedIn(loggedIn);
-      if (loggedIn && activeTab === 'landing') {
-        setActiveTab('matrix');
-      } else if (!loggedIn && activeTab !== 'landing' && activeTab !== 'login') {
-        setActiveTab('landing');
+
+      // Redirect to matrix on sign in or if landing/login while authed
+      if (event === 'SIGNED_IN' || (loggedIn && (activeTab === 'landing' || activeTab === 'login'))) {
+        setActiveTab("matrix");
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      }
+
+      if (event === 'SIGNED_OUT') {
+        setActiveTab("landing");
       }
     });
 
-    // Fetch Market Data
     const loadMarketData = async () => {
-      // Try Apify first (User requested scrape data)
       const apifyData = await fetchApifyFinanceData();
       if (apifyData.length > 0) {
         setMarketData(apifyData);
         saveStocksToSupabase(apifyData);
       } else {
-        // Fallback to existing logic
         const data = await fetchAllStocks();
         setMarketData(data);
       }
     };
+
     loadMarketData();
-    // Poll every 15 seconds as requested (backup/sync)
     const interval = setInterval(loadMarketData, 15000);
 
-    // Subscribe to Real-Time Updates (Socket.io)
     const unsubscribeSocket = subscribeToMarketUpdates((updatedStock) => {
       setMarketData(prevData => {
         const index = prevData.findIndex(s => s.symbol === updatedStock.symbol);
         if (index !== -1) {
           const newData = [...prevData];
-          // Merge update, preserving history if not in update (it isn't)
-          newData[index] = {
-            ...newData[index],
-            ...updatedStock,
-            history: newData[index].history
-          };
+          newData[index] = { ...newData[index], ...updatedStock, history: newData[index].history };
           return newData;
         }
         return prevData;
@@ -88,7 +96,7 @@ function App() {
       clearInterval(interval);
       unsubscribeSocket();
     };
-  }, []);
+  }, [activeTab]);
 
   // Derive Gainers and Losers
   const gainers = [...marketData].sort((a, b) => b.changePercent - a.changePercent).slice(0, 3);
