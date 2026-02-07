@@ -11,21 +11,19 @@ interface LandingPageProps {
 export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
     return (
         <div className="min-h-screen bg-[#050507] text-white flex flex-col font-plus-jakarta overflow-hidden relative selection:bg-lavender/30">
-
-            {/* Background Effects */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
+            {/* Background Orb */}
+            <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <Orb
                     hue={270}
                     hoverIntensity={0.5}
                     rotateOnHover={true}
                     forceHoverState={true}
-                    backgroundColor="#050507"
                 />
             </div>
 
-            {/* Gradient Overlays */}
-            <div className="fixed top-0 left-0 w-full h-1/2 bg-gradient-to-b from-[#050507]/0 via-[#050507]/50 to-[#050507] z-0 pointer-events-none" />
-            <div className="fixed bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#050507] via-[#050507]/80 to-transparent z-0 pointer-events-none" />
+            {/* Unified Background Vignette */}
+            <div className="fixed inset-0 z-0 pointer-events-none bg-[radial-gradient(circle_at_50%_50%,rgba(5,5,7,0)_0%,#050507_100%)]" />
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-40 bg-gradient-to-b from-transparent via-[#050507]/20 to-[#050507]" />
 
             {/* Navigation */}
             <nav className="relative z-50 px-6 py-6 md:px-12 flex justify-between items-center">
@@ -55,12 +53,12 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
                         SYSTEM ONLINE V1.0
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-bricolage font-black tracking-tighter leading-[0.9] mb-6">
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-bricolage font-black tracking-tighter leading-[0.85] mb-8 pb-2">
                         <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/40">MARKET</span>
-                        <span className="block text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white to-dusty-rose italic">INTELLIGENCE</span>
+                        <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white to-dusty-rose italic pb-1">INTELLIGENCE</span>
                     </h1>
 
-                    <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                    <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed opacity-80 font-medium">
                         Decode the stock market with AI-driven insights.
                         Real-time analysis, competitive arena, and explainable outcomes.
                     </p>

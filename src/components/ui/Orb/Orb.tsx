@@ -220,6 +220,8 @@ export default function Orb({
       const dpr = window.devicePixelRatio || 1;
       const width = container.clientWidth;
       const height = container.clientHeight;
+      if (width <= 0 || height <= 0) return;
+
       renderer.setSize(width * dpr, height * dpr);
       gl.canvas.style.width = width + 'px';
       gl.canvas.style.height = height + 'px';

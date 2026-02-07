@@ -8,9 +8,11 @@
   --color-obsidian-black: #050508;
   --color-cyber-gray: #0a0a0f;
 
-  /* Legacy aliases for compatibility */
-  --color-sangria-red: #6968A6;
-  --color-market-green: #CF9893;
+  /* Logic Correct Aliases */
+  --color-sangria-red: #E03E3E;
+  --color-market-green: #00FFC2;
+  --color-lavender: #6968A6;
+  --color-dusty-rose: #CF9893;
 
   --font-bricolage: "Bricolage Grotesque", sans-serif;
   --font-plus-jakarta: "Plus Jakarta Sans", sans-serif;
