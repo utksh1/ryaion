@@ -131,8 +131,12 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
             <div className={`relative w-full max-w-[1100px] h-auto min-h-[650px] md:h-[650px] flex flex-col md:flex-row overflow-hidden rounded-[48px] border border-white/10 bg-white/[0.03] backdrop-blur-[40px] shadow-[0_40px_100px_rgba(0,0,0,0.6)] transition-all duration-700 ${isSuccess ? 'blur-md grayscale scale-95' : ''}`}>
 
                 {/* Visual Area - Pure Glass */}
-                <div
-                    className={`relative w-full md:w-[45%] h-[200px] md:h-full bg-white/[0.02] transition-all duration-1000 ease-in-out z-20 overflow-hidden order-first ${isLogin ? 'md:translate-x-0' : 'md:translate-x-[122%]'}`}
+                <motion.div
+                    animate={{
+                        x: isLogin ? "0%" : "122.25%",
+                    }}
+                    transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
+                    className="relative w-full md:w-[45%] h-[200px] md:h-full bg-white/[0.02] z-30 overflow-hidden order-first"
                 >
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.05)_0%,transparent_70%)] pointer-events-none" />
@@ -168,12 +172,17 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
                         </AnimatePresence>
                     </div>
 
-                    {/* Glass Glint Effect */}
                     <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                </div>
+                </motion.div>
 
                 {/* Form Area */}
-                <div className="flex-1 relative h-full flex items-center justify-center p-8 z-10">
+                <motion.div
+                    animate={{
+                        x: isLogin ? "0%" : "-81.8%",
+                    }}
+                    transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
+                    className="flex-1 relative h-full flex items-center justify-center p-8 z-20"
+                >
                     <div className="w-full max-w-[360px]">
                         <AnimatePresence mode="wait">
                             {isLogin ? (
@@ -195,11 +204,12 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
 
                                     <form className="w-full space-y-4 mb-10" onSubmit={handleAuth}>
                                         <div className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 flex items-center transition-all focus-within:bg-white/[0.08] focus-within:border-white/20">
-                                            <Mail className="w-5 h-5 text-gray-600 mr-4" />
+                                            <Mail className="w-5 h-5 text-gray-500 mr-4" />
                                             <input
                                                 disabled={isLoading}
                                                 required
                                                 type="email"
+                                                autoComplete="off"
                                                 placeholder="Email Address"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
@@ -208,11 +218,12 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
                                         </div>
 
                                         <div className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 flex items-center transition-all focus-within:bg-white/[0.08] focus-within:border-white/20">
-                                            <Lock className="w-5 h-5 text-gray-600 mr-4" />
+                                            <Lock className="w-5 h-5 text-gray-500 mr-4" />
                                             <input
                                                 disabled={isLoading}
                                                 required
                                                 type="password"
+                                                autoComplete="off"
                                                 placeholder="Password"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
@@ -262,11 +273,12 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
 
                                     <form className="w-full space-y-4 mb-10" onSubmit={handleAuth}>
                                         <div className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 flex items-center transition-all focus-within:bg-white/[0.08] focus-within:border-white/20">
-                                            <User className="w-5 h-5 text-gray-600 mr-4" />
+                                            <User className="w-5 h-5 text-gray-500 mr-4" />
                                             <input
                                                 disabled={isLoading}
                                                 required
                                                 type="text"
+                                                autoComplete="off"
                                                 placeholder="Node Username"
                                                 value={username}
                                                 onChange={(e) => setUsername(e.target.value)}
@@ -275,11 +287,12 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
                                         </div>
 
                                         <div className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 flex items-center transition-all focus-within:bg-white/[0.08] focus-within:border-white/20">
-                                            <Mail className="w-5 h-5 text-gray-600 mr-4" />
+                                            <Mail className="w-5 h-5 text-gray-500 mr-4" />
                                             <input
                                                 disabled={isLoading}
                                                 required
                                                 type="email"
+                                                autoComplete="off"
                                                 placeholder="Email Registry"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
@@ -288,11 +301,12 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
                                         </div>
 
                                         <div className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 flex items-center transition-all focus-within:bg-white/[0.08] focus-within:border-white/20">
-                                            <Lock className="w-5 h-5 text-gray-600 mr-4" />
+                                            <Lock className="w-5 h-5 text-gray-500 mr-4" />
                                             <input
                                                 disabled={isLoading}
                                                 required
                                                 type="password"
+                                                autoComplete="off"
                                                 placeholder="Access Cipher"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
@@ -326,7 +340,7 @@ export const AuthSwitch = ({ onSuccess, onBackToDashboard }: AuthSwitchProps) =>
                             )}
                         </AnimatePresence>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Background Animation Layers */}
                 <div className="absolute top-0 right-0 w-full h-full pointer-events-none opacity-20">
