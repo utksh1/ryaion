@@ -9,12 +9,11 @@ import { HypeMeter } from "./components/matrix/HypeMeter";
 import { OracleView } from "./components/oracle/OracleView";
 import { BattleArena } from "./components/arena/BattleArena";
 import { PortfolioVault } from "./components/vault/PortfolioVault";
-import { AskRya } from "./components/askrya/AskRya";
+import { ChatSection } from "./components/askrya/ChatSection";
 import { AuthSwitch } from "./components/ui/auth-switch";
 import { StockDetailModal } from "./components/matrix/StockDetailModal";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "./lib/supabaseClient";
-import { cn } from "./lib/utils";
 
 import { fetchAllStocks, fetchApifyFinanceData, saveStocksToSupabase, subscribeToMarketUpdates, type LiveStockData } from "./services/marketDataService";
 import { SettingsView } from "./components/settings/SettingsView";
@@ -131,7 +130,6 @@ function App() {
 
   return (
     <AppLayout activeTab={activeTab} onNavigate={handleNavigate} isLoggedIn={isLoggedIn}>
-      <AskRya />
       <StockDetailModal stock={selectedStock} onClose={() => setSelectedStock(null)} />
 
       <AnimatePresence mode="wait">
@@ -244,43 +242,7 @@ function App() {
             {/* Right Col - Intelligence & Hype */}
             <div className="md:col-span-4 flex flex-col gap-6">
               <HypeMeter />
-
-              <GlassCard className="p-6 flex-1 min-h-[400px] bg-gradient-to-b from-white/5 to-black/40 border-lavender/20">
-                <h3 className="text-xl font-bricolage mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-market-green rounded-full animate-ping" />
-                  AI ORACLE
-                  <span className="ml-auto text-[10px] opacity-40 font-normal normal-case tracking-normal">Click cards for stats</span>
-                </h3>
-                <div className="space-y-4">
-                  {(marketData.length > 0 ? marketData.slice(0, 3) : []).map((stock) => (
-                    <div
-                      key={stock.symbol}
-                      onClick={() => handleStockClick(stock)}
-                      className="p-3 rounded-lg bg-white/5 border border-white/5 hover:border-lavender/40 hover:bg-white/10 transition-all cursor-pointer group active:scale-[0.98]"
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold tracking-wider text-sm">{stock.symbol}</span>
-                        <span className={cn("text-[9px] font-black border px-1.5 py-0.5 rounded",
-                          stock.changePercent > 0 ? "text-market-green border-market-green/20 bg-market-green/5" : "text-market-red border-market-red/20 bg-market-red/5"
-                        )}>
-                          {stock.changePercent > 0 ? 'BULLISH' : 'BEARISH'}
-                        </span>
-                      </div>
-                      <p className="text-gray-500 text-[11px] leading-tight line-clamp-2 group-hover:text-gray-300">
-                        {stock.changePercent > 1.5 ? "Strong bullish divergence detected in neural grid." :
-                          stock.changePercent < -1.5 ? "Heavy distribution pattern forming in the matrix." :
-                            "Neural channels indicate consolidation near support."}
-                      </p>
-                    </div>
-                  ))}
-                  {marketData.length === 0 && [1, 2, 3].map(i => (
-                    <div key={i} className="h-20 bg-white/5 rounded-xl animate-pulse" />
-                  ))}
-                </div>
-                <div className="mt-6">
-                  <CyberButton glow className="w-full" onClick={() => setShowOracleModal(true)}>Ask Oracle</CyberButton>
-                </div>
-              </GlassCard>
+              <ChatSection />
             </div>
           </motion.div>
         )}
