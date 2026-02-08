@@ -44,8 +44,8 @@ export const OracleView = ({ onClose }: OracleViewProps) => {
                         <BrainCircuit size={32} className="text-dusty-rose animate-pulse" />
                     </div>
 
-                    <h2 className="text-3xl font-bricolage font-bold text-center mb-6">
-                        AI ORACLE <span className="text-dusty-rose">V3.0</span>
+                    <h2 className="text-3xl font-bricolage font-bold text-center mb-6 uppercase tracking-tighter italic">
+                        ASK RYA <span className="text-dusty-rose">V3.0</span>
                     </h2>
                     <div className="flex items-center gap-1 text-xs text-lavender mb-6">
                         <Sparkles size={12} />
