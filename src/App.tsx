@@ -240,7 +240,7 @@ function App() {
             </div>
 
             {/* Right Col - Intelligence & Hype */}
-            <div className="md:col-span-4 flex flex-col gap-6">
+            <div className="md:col-span-4 flex flex-col gap-6 sticky top-28 h-fit">
               <HypeMeter />
               <ChatSection />
             </div>
