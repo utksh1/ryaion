@@ -150,27 +150,7 @@ function App() {
             <div className="flex flex-col gap-8 w-full">
               <MarketPulse />
 
-              {/* Enhanced Full-Bleed Hero Section */}
-              <div className="w-full mb-4">
-                <GlassCard className="relative h-[280px] md:h-[350px] overflow-hidden flex items-center justify-center border-white/5 shadow-2xl bg-white/[0.01] backdrop-blur-3xl rounded-none md:rounded-[40px] border-x-0 md:border-x">
-                  <div className="relative z-10 text-center px-4 w-full max-w-[1200px]">
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                      <h2 className="text-5xl md:text-[100px] font-bricolage font-black uppercase tracking-tighter italic text-white mb-4 leading-none filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
-                        Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white to-dusty-rose">Surveillance</span>
-                      </h2>
-                      <div className="flex items-center justify-center gap-12 text-[12px] md:text-[16px] font-black tracking-[0.8em] text-white/40 uppercase">
-                        <span className="flex items-center gap-4">Pulse Monitor <span className="w-2.5 h-2.5 bg-lavender rounded-full opacity-70 shadow-[0_0_15px_rgba(165,164,226,1)]" /></span>
-                        <span className="flex items-center gap-4">Neural Analysis <span className="w-2.5 h-2.5 bg-dusty-rose rounded-full opacity-70 shadow-[0_0_15px_rgba(207,152,147,1)]" /></span>
-                        <span className="flex items-center gap-4">Alpha Node V1.0</span>
-                      </div>
-                    </motion.div>
-                  </div>
-                </GlassCard>
-              </div>
+
 
               <div className="flex flex-col gap-4 px-6 md:px-12">
                 <div className="flex justify-between items-center px-2">
