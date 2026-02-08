@@ -23,41 +23,41 @@ export const StockCard = ({ stock, onClick }: StockCardProps) => {
             hoverEffect
             onClick={onClick}
             className={cn(
-                "p-6 border-l-4 transition-all duration-300 cursor-pointer overflow-hidden group",
+                "p-4 border-l-4 transition-all duration-300 cursor-pointer",
                 isPositive ? "border-l-dusty-rose" : "border-l-deep-teal"
             )}
         >
             <div className="flex justify-between items-start mb-2">
                 <div>
-                    <h4 className="font-bold text-xl font-bricolage tracking-tighter group-hover:text-white transition-colors">{stock.symbol}</h4>
-                    <div className="text-sm text-gray-500 truncate w-full group-hover:text-gray-400 transition-colors">{stock.name}</div>
+                    <h4 className="font-bold text-lg font-bricolage tracking-tight">{stock.symbol}</h4>
+                    <div className="text-xs text-gray-400 truncate w-full">{stock.name}</div>
                 </div>
                 <div className={cn(
-                    "text-[10px] font-black px-2.5 py-1 rounded bg-white/5 border tracking-widest",
+                    "text-xs font-bold px-2 py-1 rounded bg-white/5 border",
                     sentimentColors[stock.sentiment]
                 )}>
                     {stock.sentiment.toUpperCase()}
                 </div>
             </div>
 
-            <div className="flex items-end justify-between mt-6">
+            <div className="flex items-end justify-between mt-4">
                 <div>
-                    <div className="text-3xl font-black font-mono tracking-tighter group-hover:scale-105 transition-transform origin-left">
+                    <div className="text-2xl font-bold font-mono">
                         ₹{stock.price.toLocaleString()}
                     </div>
                     <div className={cn(
-                        "flex items-center gap-1.5 text-sm font-bold mt-1",
+                        "flex items-center gap-1 text-xs font-bold",
                         isPositive ? "text-dusty-rose" : "text-deep-teal"
                     )}>
-                        {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                        {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                         <span>{stock.change > 0 ? '+' : ''}{stock.change.toFixed(2)} ({stock.changePercent.toFixed(2)}%)</span>
                     </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-1.5">
-                    <div className="text-[10px] text-gray-500 font-mono tracking-tighter">AURA SCORE</div>
-                    <div className="text-lg font-black text-white flex items-center gap-1.5">
-                        <Activity size={16} className="text-lavender" />
+                <div className="flex flex-col items-end gap-1">
+                    <div className="text-xs text-gray-500 font-mono">AURA SCORE</div>
+                    <div className="text-sm font-bold text-white flex items-center gap-1">
+                        <Activity size={12} className="text-lavender" />
                         {stock.aura}
                     </div>
                 </div>

@@ -5,14 +5,16 @@ import { GlassCard } from "./components/ui/GlassCard";
 import { CyberButton } from "./components/ui/CyberButton";
 import { MarketPulse } from "./components/matrix/MarketPulse";
 import { NeuralGrid } from "./components/matrix/NeuralGrid";
+import { HypeMeter } from "./components/matrix/HypeMeter";
 import { OracleView } from "./components/oracle/OracleView";
 import { BattleArena } from "./components/arena/BattleArena";
 import { PortfolioVault } from "./components/vault/PortfolioVault";
+import { AskRya } from "./components/askrya/AskRya";
 import { AuthSwitch } from "./components/ui/auth-switch";
 import { StockDetailModal } from "./components/matrix/StockDetailModal";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "./lib/supabaseClient";
-
+import { cn } from "./lib/utils";
 
 import { fetchAllStocks, fetchApifyFinanceData, saveStocksToSupabase, subscribeToMarketUpdates, type LiveStockData } from "./services/marketDataService";
 import { SettingsView } from "./components/settings/SettingsView";
@@ -129,7 +131,7 @@ function App() {
 
   return (
     <AppLayout activeTab={activeTab} onNavigate={handleNavigate} isLoggedIn={isLoggedIn}>
-
+      <AskRya />
       <StockDetailModal stock={selectedStock} onClose={() => setSelectedStock(null)} />
 
       <AnimatePresence mode="wait">
@@ -145,80 +147,140 @@ function App() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="w-full flex flex-col gap-8 text-white"
+            className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full text-white"
           >
-            <div className="flex flex-col gap-8 w-full">
+            {/* Left Col - Market Matrix */}
+            <div className="md:col-span-8 flex flex-col gap-6">
               <MarketPulse />
 
+              {/* Minimal 3D Hero Section */}
+              <GlassCard className="relative h-[160px] md:h-[180px] overflow-hidden flex items-center justify-center border-white/5 shadow-lg bg-white/[0.01] backdrop-blur-2xl">
+                <div className="relative z-10 text-center px-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.99 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                  >
+                    <h2 className="text-2xl md:text-[36px] font-bricolage font-black uppercase tracking-tighter italic text-white mb-1.5 leading-none">
+                      Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white/70 to-dusty-rose">Surveillance</span>
+                    </h2>
+                    <div className="flex items-center justify-center gap-3 text-[8px] md:text-[9px] font-bold tracking-[0.4em] text-white/15 uppercase">
+                      <span className="flex items-center gap-1.5">Pulse Monitor <span className="w-1 h-1 bg-lavender rounded-full opacity-30" /></span>
+                      <span className="flex items-center gap-1.5">Neural Analysis <span className="w-1 h-1 bg-dusty-rose rounded-full opacity-30" /></span>
+                      <span className="flex items-center gap-1.5">Alpha Node</span>
+                    </div>
+                  </motion.div>
+                </div>
+              </GlassCard>
 
-
-              <div className="flex flex-col gap-4 px-6 md:px-12">
+              <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center px-2">
-                  <h2 className="text-2xl font-black font-bricolage text-white tracking-[0.3em] uppercase opacity-60 flex items-center gap-3">
+                  <h2 className="text-xl font-bold font-bricolage text-white tracking-widest uppercase opacity-50 flex items-center gap-2">
                     <span className="text-lavender">///</span> SENSORY GRID
                   </h2>
-                  <CyberButton variant="ghost" className="text-xs border border-white/10 opacity-50 px-6">Matrix Configuration</CyberButton>
+                  <CyberButton variant="ghost" className="text-[10px] border border-white/5 opacity-40">Matrix Config</CyberButton>
                 </div>
                 <NeuralGrid onStockClick={handleStockClick} />
               </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-6 md:px-12">
-                <GlassCard className="p-8 min-h-[300px] border-market-green/10 bg-market-green/[0.01]">
-                  <h3 className="text-2xl font-black mb-6 text-market-green flex items-center gap-3">
-                    <span className="text-xs tracking-[0.4em] bg-market-green/20 px-3 py-1 rounded-full text-white font-mono">NODE ALPHA: GAINERS</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <GlassCard className="p-6 min-h-[200px]">
+                  <h3 className="text-lg font-bold mb-4 text-market-green flex items-center gap-2">
+                    <span className="text-xs tracking-widest bg-market-green/10 px-2 py-0.5 rounded">TOP GAINERS</span>
                   </h3>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {gainers.length > 0 ? (
                       gainers.map((stock) => (
                         <div
                           key={stock.symbol}
-                          className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0 hover:bg-white/5 p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.01]"
+                          className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0 hover:bg-white/5 p-2 rounded cursor-pointer transition-colors"
                           onClick={() => handleStockClick(stock)}
                         >
-                          <div className="flex flex-col">
-                            <div className="font-black text-lg tracking-widest font-mono">{stock.symbol}</div>
-                            <div className="text-xs text-gray-500 uppercase tracking-widest">{stock.name}</div>
+                          <div>
+                            <div className="font-bold text-sm tracking-wider">{stock.symbol}</div>
+                            <div className="text-[10px] text-gray-500">{stock.name}</div>
                           </div>
                           <div className="text-right">
-                            <div className="font-mono text-market-green font-black text-2xl">+{stock.changePercent.toFixed(2)}%</div>
-                            <div className="text-sm text-gray-400 font-mono">₹{stock.price.toLocaleString()}</div>
+                            <div className="font-mono text-market-green font-bold text-sm">+{stock.changePercent.toFixed(2)}%</div>
+                            <div className="text-[10px] text-gray-400">₹{stock.price.toLocaleString()}</div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="text-sm text-gray-500 italic py-8 text-center font-mono">INITIALIZING DATA STREAMS...</div>
+                      <div className="text-xs text-gray-500 italic py-4 text-center">Loading market data...</div>
                     )}
                   </div>
                 </GlassCard>
-
-                <GlassCard className="p-8 min-h-[300px] border-market-red/10 bg-market-red/[0.01]">
-                  <h3 className="text-2xl font-black mb-6 text-market-red flex items-center gap-3">
-                    <span className="text-xs tracking-[0.4em] bg-market-red/20 px-3 py-1 rounded-full text-white font-mono">NODE OMEGA: LOSERS</span>
+                <GlassCard className="p-6 min-h-[200px]">
+                  <h3 className="text-lg font-bold mb-4 text-market-red flex items-center gap-2">
+                    <span className="text-xs tracking-widest bg-market-red/10 px-2 py-0.5 rounded">TOP LOSERS</span>
                   </h3>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {losers.length > 0 ? (
                       losers.map((stock) => (
                         <div
                           key={stock.symbol}
-                          className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0 hover:bg-white/5 p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.01]"
+                          className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0 hover:bg-white/5 p-2 rounded cursor-pointer transition-colors"
                           onClick={() => handleStockClick(stock)}
                         >
-                          <div className="flex flex-col">
-                            <div className="font-black text-lg tracking-widest font-mono">{stock.symbol}</div>
-                            <div className="text-xs text-gray-500 uppercase tracking-widest">{stock.name}</div>
+                          <div>
+                            <div className="font-bold text-sm tracking-wider">{stock.symbol}</div>
+                            <div className="text-[10px] text-gray-500">{stock.name}</div>
                           </div>
                           <div className="text-right">
-                            <div className="font-mono text-market-red font-black text-2xl">{stock.changePercent.toFixed(2)}%</div>
-                            <div className="text-sm text-gray-400 font-mono">₹{stock.price.toLocaleString()}</div>
+                            <div className="font-mono text-market-red font-bold text-sm">{stock.changePercent.toFixed(2)}%</div>
+                            <div className="text-[10px] text-gray-400">₹{stock.price.toLocaleString()}</div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="text-sm text-gray-500 italic py-8 text-center font-mono">INITIALIZING DATA STREAMS...</div>
+                      <div className="text-xs text-gray-500 italic py-4 text-center">Loading market data...</div>
                     )}
                   </div>
                 </GlassCard>
               </div>
+            </div>
+
+            {/* Right Col - Intelligence & Hype */}
+            <div className="md:col-span-4 flex flex-col gap-6">
+              <HypeMeter />
+
+              <GlassCard className="p-6 flex-1 min-h-[400px] bg-gradient-to-b from-white/5 to-black/40 border-lavender/20">
+                <h3 className="text-xl font-bricolage mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-market-green rounded-full animate-ping" />
+                  AI ORACLE
+                  <span className="ml-auto text-[10px] opacity-40 font-normal normal-case tracking-normal">Click cards for stats</span>
+                </h3>
+                <div className="space-y-4">
+                  {(marketData.length > 0 ? marketData.slice(0, 3) : []).map((stock) => (
+                    <div
+                      key={stock.symbol}
+                      onClick={() => handleStockClick(stock)}
+                      className="p-3 rounded-lg bg-white/5 border border-white/5 hover:border-lavender/40 hover:bg-white/10 transition-all cursor-pointer group active:scale-[0.98]"
+                    >
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold tracking-wider text-sm">{stock.symbol}</span>
+                        <span className={cn("text-[9px] font-black border px-1.5 py-0.5 rounded",
+                          stock.changePercent > 0 ? "text-market-green border-market-green/20 bg-market-green/5" : "text-market-red border-market-red/20 bg-market-red/5"
+                        )}>
+                          {stock.changePercent > 0 ? 'BULLISH' : 'BEARISH'}
+                        </span>
+                      </div>
+                      <p className="text-gray-500 text-[11px] leading-tight line-clamp-2 group-hover:text-gray-300">
+                        {stock.changePercent > 1.5 ? "Strong bullish divergence detected in neural grid." :
+                          stock.changePercent < -1.5 ? "Heavy distribution pattern forming in the matrix." :
+                            "Neural channels indicate consolidation near support."}
+                      </p>
+                    </div>
+                  ))}
+                  {marketData.length === 0 && [1, 2, 3].map(i => (
+                    <div key={i} className="h-20 bg-white/5 rounded-xl animate-pulse" />
+                  ))}
+                </div>
+                <div className="mt-6">
+                  <CyberButton glow className="w-full" onClick={() => setShowOracleModal(true)}>Ask Oracle</CyberButton>
+                </div>
+              </GlassCard>
             </div>
           </motion.div>
         )}
