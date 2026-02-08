@@ -37,7 +37,7 @@ export const NeuralGrid = ({ onStockClick }: NeuralGridProps) => {
 
     if (loading) {
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-8">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                     <div key={i} className="h-32 bg-white/5 rounded-xl animate-pulse" />
                 ))}
@@ -55,7 +55,7 @@ export const NeuralGrid = ({ onStockClick }: NeuralGridProps) => {
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-8">
             {stocks.map((stock, i) => (
                 <motion.div
                     key={stock.symbol}

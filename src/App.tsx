@@ -145,105 +145,100 @@ function App() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full text-white"
+            className="w-full flex flex-col gap-8 text-white"
           >
-            {/* Left Col - Market Matrix */}
-            <div className="md:col-span-8 flex flex-col gap-6">
+            <div className="flex flex-col gap-8 w-full">
               <MarketPulse />
 
-              {/* Minimal 3D Hero Section */}
-              <GlassCard className="relative h-[160px] md:h-[180px] overflow-hidden flex items-center justify-center border-white/5 shadow-lg bg-white/[0.01] backdrop-blur-2xl">
-                <div className="relative z-10 text-center px-4">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.99 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                  >
-                    <h2 className="text-2xl md:text-[36px] font-bricolage font-black uppercase tracking-tighter italic text-white mb-1.5 leading-none">
-                      Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white/70 to-dusty-rose">Surveillance</span>
-                    </h2>
-                    <div className="flex items-center justify-center gap-3 text-[8px] md:text-[9px] font-bold tracking-[0.4em] text-white/15 uppercase">
-                      <span className="flex items-center gap-1.5">Pulse Monitor <span className="w-1 h-1 bg-lavender rounded-full opacity-30" /></span>
-                      <span className="flex items-center gap-1.5">Neural Analysis <span className="w-1 h-1 bg-dusty-rose rounded-full opacity-30" /></span>
-                      <span className="flex items-center gap-1.5">Alpha Node</span>
-                    </div>
-                  </motion.div>
-                </div>
-              </GlassCard>
+              {/* Enhanced Full-Bleed Hero Section */}
+              <div className="w-full mb-4">
+                <GlassCard className="relative h-[280px] md:h-[350px] overflow-hidden flex items-center justify-center border-white/5 shadow-2xl bg-white/[0.01] backdrop-blur-3xl rounded-none md:rounded-[40px] border-x-0 md:border-x">
+                  <div className="relative z-10 text-center px-4 w-full max-w-[1200px]">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                    >
+                      <h2 className="text-5xl md:text-[100px] font-bricolage font-black uppercase tracking-tighter italic text-white mb-4 leading-none filter drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+                        Market <span className="text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white to-dusty-rose">Surveillance</span>
+                      </h2>
+                      <div className="flex items-center justify-center gap-12 text-[12px] md:text-[16px] font-black tracking-[0.8em] text-white/40 uppercase">
+                        <span className="flex items-center gap-4">Pulse Monitor <span className="w-2.5 h-2.5 bg-lavender rounded-full opacity-70 shadow-[0_0_15px_rgba(165,164,226,1)]" /></span>
+                        <span className="flex items-center gap-4">Neural Analysis <span className="w-2.5 h-2.5 bg-dusty-rose rounded-full opacity-70 shadow-[0_0_15px_rgba(207,152,147,1)]" /></span>
+                        <span className="flex items-center gap-4">Alpha Node V1.0</span>
+                      </div>
+                    </motion.div>
+                  </div>
+                </GlassCard>
+              </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 px-6 md:px-12">
                 <div className="flex justify-between items-center px-2">
-                  <h2 className="text-xl font-bold font-bricolage text-white tracking-widest uppercase opacity-50 flex items-center gap-2">
+                  <h2 className="text-2xl font-black font-bricolage text-white tracking-[0.3em] uppercase opacity-60 flex items-center gap-3">
                     <span className="text-lavender">///</span> SENSORY GRID
                   </h2>
-                  <CyberButton variant="ghost" className="text-[10px] border border-white/5 opacity-40">Matrix Config</CyberButton>
+                  <CyberButton variant="ghost" className="text-xs border border-white/10 opacity-50 px-6">Matrix Configuration</CyberButton>
                 </div>
                 <NeuralGrid onStockClick={handleStockClick} />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <GlassCard className="p-6 min-h-[200px]">
-                  <h3 className="text-lg font-bold mb-4 text-market-green flex items-center gap-2">
-                    <span className="text-xs tracking-widest bg-market-green/10 px-2 py-0.5 rounded">TOP GAINERS</span>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 px-6 md:px-12">
+                <GlassCard className="p-8 min-h-[300px] border-market-green/10 bg-market-green/[0.01]">
+                  <h3 className="text-2xl font-black mb-6 text-market-green flex items-center gap-3">
+                    <span className="text-xs tracking-[0.4em] bg-market-green/20 px-3 py-1 rounded-full text-white font-mono">NODE ALPHA: GAINERS</span>
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {gainers.length > 0 ? (
                       gainers.map((stock) => (
                         <div
                           key={stock.symbol}
-                          className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0 hover:bg-white/5 p-2 rounded cursor-pointer transition-colors"
+                          className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0 hover:bg-white/5 p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.01]"
                           onClick={() => handleStockClick(stock)}
                         >
-                          <div>
-                            <div className="font-bold text-sm tracking-wider">{stock.symbol}</div>
-                            <div className="text-[10px] text-gray-500">{stock.name}</div>
+                          <div className="flex flex-col">
+                            <div className="font-black text-lg tracking-widest font-mono">{stock.symbol}</div>
+                            <div className="text-xs text-gray-500 uppercase tracking-widest">{stock.name}</div>
                           </div>
                           <div className="text-right">
-                            <div className="font-mono text-market-green font-bold text-sm">+{stock.changePercent.toFixed(2)}%</div>
-                            <div className="text-[10px] text-gray-400">₹{stock.price.toLocaleString()}</div>
+                            <div className="font-mono text-market-green font-black text-2xl">+{stock.changePercent.toFixed(2)}%</div>
+                            <div className="text-sm text-gray-400 font-mono">₹{stock.price.toLocaleString()}</div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="text-xs text-gray-500 italic py-4 text-center">Loading market data...</div>
+                      <div className="text-sm text-gray-500 italic py-8 text-center font-mono">INITIALIZING DATA STREAMS...</div>
                     )}
                   </div>
                 </GlassCard>
-                <GlassCard className="p-6 min-h-[200px]">
-                  <h3 className="text-lg font-bold mb-4 text-market-red flex items-center gap-2">
-                    <span className="text-xs tracking-widest bg-market-red/10 px-2 py-0.5 rounded">TOP LOSERS</span>
+
+                <GlassCard className="p-8 min-h-[300px] border-market-red/10 bg-market-red/[0.01]">
+                  <h3 className="text-2xl font-black mb-6 text-market-red flex items-center gap-3">
+                    <span className="text-xs tracking-[0.4em] bg-market-red/20 px-3 py-1 rounded-full text-white font-mono">NODE OMEGA: LOSERS</span>
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {losers.length > 0 ? (
                       losers.map((stock) => (
                         <div
                           key={stock.symbol}
-                          className="flex justify-between items-center border-b border-white/5 pb-2 last:border-0 last:pb-0 hover:bg-white/5 p-2 rounded cursor-pointer transition-colors"
+                          className="flex justify-between items-center border-b border-white/5 pb-4 last:border-0 last:pb-0 hover:bg-white/5 p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.01]"
                           onClick={() => handleStockClick(stock)}
                         >
-                          <div>
-                            <div className="font-bold text-sm tracking-wider">{stock.symbol}</div>
-                            <div className="text-[10px] text-gray-500">{stock.name}</div>
+                          <div className="flex flex-col">
+                            <div className="font-black text-lg tracking-widest font-mono">{stock.symbol}</div>
+                            <div className="text-xs text-gray-500 uppercase tracking-widest">{stock.name}</div>
                           </div>
                           <div className="text-right">
-                            <div className="font-mono text-market-red font-bold text-sm">{stock.changePercent.toFixed(2)}%</div>
-                            <div className="text-[10px] text-gray-400">₹{stock.price.toLocaleString()}</div>
+                            <div className="font-mono text-market-red font-black text-2xl">{stock.changePercent.toFixed(2)}%</div>
+                            <div className="text-sm text-gray-400 font-mono">₹{stock.price.toLocaleString()}</div>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="text-xs text-gray-500 italic py-4 text-center">Loading market data...</div>
+                      <div className="text-sm text-gray-500 italic py-8 text-center font-mono">INITIALIZING DATA STREAMS...</div>
                     )}
                   </div>
                 </GlassCard>
               </div>
-            </div>
-
-            {/* Right Col - Intelligence & Hype */}
-            <div className="md:col-span-4 flex flex-col gap-6">
-
-
-
             </div>
           </motion.div>
         )}

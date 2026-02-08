@@ -120,8 +120,8 @@ export const AppLayout = ({ children, activeTab, onNavigate, isLoggedIn = false 
             )}
 
 
-            {/* Main Content Area */}
-            <main className="flex-1 overflow-y-auto h-screen relative z-10 p-4 md:p-8 pt-24 md:pt-28 pb-8 flex flex-col">
+            {/* Main Content Area - Full Bleed */}
+            <main className="flex-1 overflow-y-auto h-screen relative z-10 pt-24 md:pt-28 pb-8 flex flex-col">
                 {activeTab !== 'login' && <LiveTicker />}
 
                 {children}
