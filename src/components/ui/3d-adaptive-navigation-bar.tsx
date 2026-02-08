@@ -20,7 +20,6 @@ export const PillBase: React.FC<{ activeSection: string; onSectionClick: (id: st
 
   const navItems: NavItem[] = [
     { label: 'Matrix', id: 'matrix' },
-    { label: 'Ask Rya', id: 'oracle' },
     { label: 'Arena', id: 'arena' },
     { label: 'Vault', id: 'vault' },
     ...(isLoggedIn ? [] : [{ label: 'Login', id: 'login' }]),
