@@ -63,7 +63,7 @@ export const ChatSection = () => {
     };
 
     return (
-        <GlassCard className="flex flex-col flex-1 min-h-[400px] max-h-[600px] border-lavender/20 bg-gradient-to-b from-white/[0.03] to-black/40 backdrop-blur-3xl overflow-hidden group">
+        <GlassCard className="flex flex-col h-[450px] border-lavender/20 bg-gradient-to-b from-white/[0.03] to-black/40 backdrop-blur-3xl overflow-hidden group">
             {/* Header */}
             <div className="p-5 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
                 <div className="flex items-center gap-3">
