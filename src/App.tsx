@@ -5,11 +5,9 @@ import { GlassCard } from "./components/ui/GlassCard";
 import { CyberButton } from "./components/ui/CyberButton";
 import { MarketPulse } from "./components/matrix/MarketPulse";
 import { NeuralGrid } from "./components/matrix/NeuralGrid";
-import { HypeMeter } from "./components/matrix/HypeMeter";
 import { OracleView } from "./components/oracle/OracleView";
 import { BattleArena } from "./components/arena/BattleArena";
 import { PortfolioVault } from "./components/vault/PortfolioVault";
-import { AskRya } from "./components/askrya/AskRya";
 import { AuthSwitch } from "./components/ui/auth-switch";
 import { StockDetailModal } from "./components/matrix/StockDetailModal";
 import { AnimatePresence, motion } from "framer-motion";
@@ -131,7 +129,7 @@ function App() {
 
   return (
     <AppLayout activeTab={activeTab} onNavigate={handleNavigate} isLoggedIn={isLoggedIn}>
-      <AskRya />
+
       <StockDetailModal stock={selectedStock} onClose={() => setSelectedStock(null)} />
 
       <AnimatePresence mode="wait">
@@ -243,7 +241,7 @@ function App() {
 
             {/* Right Col - Intelligence & Hype */}
             <div className="md:col-span-4 flex flex-col gap-6">
-              <HypeMeter />
+
 
 
             </div>
