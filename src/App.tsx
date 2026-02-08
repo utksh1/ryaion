@@ -6,7 +6,6 @@ import { CyberButton } from "./components/ui/CyberButton";
 import { MarketPulse } from "./components/matrix/MarketPulse";
 import { NeuralGrid } from "./components/matrix/NeuralGrid";
 import { HypeMeter } from "./components/matrix/HypeMeter";
-import { OracleView } from "./components/oracle/OracleView";
 import { BattleArena } from "./components/arena/BattleArena";
 import { PortfolioVault } from "./components/vault/PortfolioVault";
 import { ChatSection } from "./components/askrya/ChatSection";
@@ -22,7 +21,6 @@ import { LandingPage } from "./components/pages/LandingPage";
 
 function App() {
   const [activeTab, setActiveTab] = useState("landing"); // Default to landing
-  const [showOracleModal, setShowOracleModal] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [marketData, setMarketData] = useState<LiveStockData[]>([]);
   const [selectedStock, setSelectedStock] = useState<LiveStockData | null>(null);
@@ -106,11 +104,7 @@ function App() {
   // Requirement says "Advisor Node", implies a full view.
   // But my previous OracleView was a modal. I'll make it a modal for now or handle 'oracle' tab to open modal.
   const handleNavigate = (tab: string) => {
-    if (tab === 'oracle') {
-      setShowOracleModal(true);
-    } else {
-      setActiveTab(tab);
-    }
+    setActiveTab(tab);
   };
 
   const handleStockClick = async (stock: LiveStockData) => {
@@ -133,10 +127,6 @@ function App() {
       <StockDetailModal stock={selectedStock} onClose={() => setSelectedStock(null)} />
 
       <AnimatePresence mode="wait">
-        {/* Oracle Modal Overlay */}
-        {showOracleModal && <OracleView onClose={() => setShowOracleModal(false)} />}
-
-
         {/* Views */}
 
         {activeTab === 'matrix' && (
