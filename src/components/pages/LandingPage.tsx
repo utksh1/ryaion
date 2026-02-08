@@ -27,66 +27,55 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
 
             {/* Navigation */}
             <nav className="relative z-50 px-6 py-6 md:px-12 flex justify-between items-center">
-                <div className="text-2xl font-bricolage font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">
+                <div className="text-4xl md:text-4xl font-bricolage font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-white/50">
                     RYAION
                 </div>
                 <div className="flex gap-4">
-                    <button onClick={onGetStarted} className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
-                        Login
-                    </button>
-                    <CyberButton onClick={onGetStarted} className="text-xs px-4 py-2 h-auto">
+                    <CyberButton onClick={onGetStarted} className="text-lg px-10 py-3.5 h-auto">
                         GET ACCESS
                     </CyberButton>
                 </div>
             </nav>
 
             {/* Hero Section */}
-            <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 mt-[-80px]">
+            <main className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-4 py-20">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="max-w-4xl mx-auto"
+                    className="max-w-5xl mx-auto"
                 >
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono tracking-widest text-lavender/80 mb-6 backdrop-blur-md">
-                        <span className="w-1.5 h-1.5 rounded-full bg-market-green animate-pulse" />
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono tracking-widest text-white mb-8 backdrop-blur-md">
+                        <span className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                         SYSTEM ONLINE V1.0
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-bricolage font-black tracking-tighter leading-[0.85] mb-8 pb-2">
+                    <h1 className="text-6xl md:text-8xl lg:text-9xl font-bricolage font-black tracking-tighter leading-[0.8] mb-10 pb-2">
                         <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/40">MARKET</span>
                         <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white to-dusty-rose italic pb-1">INTELLIGENCE</span>
                     </h1>
 
-                    <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed opacity-80 font-medium">
+                    <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-14 leading-relaxed opacity-80 font-medium">
                         Decode the stock market with AI-driven insights.
                         Real-time analysis, competitive arena, and explainable outcomes.
                     </p>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-6">
                         <CyberButton
                             glow
-                            className="text-lg px-8 py-4 h-auto min-w-[200px]"
+                            className="text-xl px-10 py-5 h-auto min-w-[260px]"
                             onClick={onGetStarted}
                         >
-                            ENTER MATRIX <ArrowRight className="ml-2 w-5 h-5" />
+                            ENTER MATRIX <ArrowRight className="ml-2 w-6 h-6" />
                         </CyberButton>
-
-                        <button
-                            onClick={() => window.open('https://github.com/your-repo', '_blank')}
-                            className="px-8 py-4 rounded bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-sm font-bold tracking-wider"
-                        >
-                            VIEW DOCS
-                        </button>
                     </div>
                 </motion.div>
 
-                {/* Feature Grid */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5, duration: 1 }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 max-w-5xl mx-auto w-full text-left"
+                    className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 max-w-6xl mx-auto w-full text-left"
                 >
                     <FeatureCard
                         icon={<BrainCircuit className="text-lavender" />}
@@ -115,11 +104,11 @@ export const LandingPage = ({ onGetStarted }: LandingPageProps) => {
 };
 
 const FeatureCard = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
-    <GlassCard className="p-6 hover:bg-white/5 transition-colors group cursor-default">
-        <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500">
+    <GlassCard className="p-8 hover:bg-white/5 transition-all group cursor-default">
+        <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-500 [&>svg]:w-8 [&>svg]:h-8">
             {icon}
         </div>
-        <h3 className="text-lg font-bold font-bricolage mb-2 text-gray-200">{title}</h3>
-        <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
+        <h3 className="text-xl font-bold font-bricolage mb-3 text-gray-200 group-hover:text-white transition-colors">{title}</h3>
+        <p className="text-base text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors">{desc}</p>
     </GlassCard>
 );

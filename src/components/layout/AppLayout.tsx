@@ -46,7 +46,7 @@ export const AppLayout = ({ children, activeTab, onNavigate, isLoggedIn = false 
 
                     {/* Left Branding */}
                     <div className="pointer-events-auto">
-                        <h1 className="text-2xl md:text-4xl font-bricolage font-bold uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white/90 to-white/40">
+                        <h1 className="text-3xl md:text-5xl font-bricolage font-bold uppercase tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white/90 to-white/40">
                             RYAION
                         </h1>
                     </div>
